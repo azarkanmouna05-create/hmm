@@ -7,7 +7,10 @@
 import { CH, DEFAULT_POLICY, PACES, TONES, LEVELS, allowedChars, clampLevel, buildPrompt, parseReply } from "../public/js/engine/engine.js";
 
 const BASE = process.env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai";
-const MODEL = process.env.AI_MODEL || "gemini-3.8-flash";
+// One model or a comma-separated fallback chain. On the free tier each model has its own quota,
+// so when one is busy (503), out of quota (429) or retired (404), the next one answers.
+const MODELS = (process.env.AI_MODEL || "gemini-3.8-flash,gemini-3.7-flash,gemini-3.5-flash-lite,gemini-flash-lite-latest")
+  .split(",").map((m) => m.trim()).filter(Boolean);
 const KEY = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || "";
 const MAX_TURNS = 40, MAX_CHARS = 2000;
 
@@ -53,34 +56,36 @@ export async function POST(request) {
 
   if (!KEY) return bad(503, "AI is not configured (missing AI_API_KEY).");
 
+  const call = (model, thinkingOff = true) => fetch(`${BASE}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${KEY}` },
+    body: JSON.stringify({
+      model, messages: convo, temperature: 0.6, max_tokens: 600,
+      // Gemini "thinks" before answering by default; short Socratic turns don't need it and it eats the token budget.
+      ...(thinkingOff && BASE.includes("generativelanguage") ? { reasoning_effort: "none" } : {}),
+    }),
+    signal: AbortSignal.timeout(15000),
+  });
+
   try {
-    const call = () => fetch(`${BASE}/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${KEY}` },
-      body: JSON.stringify({
-        model: MODEL, messages: convo, temperature: 0.6, max_tokens: 600,
-        // Gemini "thinks" before answering by default; short Socratic turns don't need it and it eats the token budget.
-        ...(BASE.includes("generativelanguage") ? { reasoning_effort: "none" } : {}),
-      }),
-      signal: AbortSignal.timeout(20000),
-    });
-    // A busy provider (503) usually recovers within seconds: retry twice with a short backoff.
-    let r = await call();
-    for (const wait of [1200, 3000]) {
-      if (r.status !== 503) break; // 429 = quota: retrying only burns more quota
-      await new Promise((res) => setTimeout(res, wait));
-      r = await call();
+    let r, used, tried = [];
+    for (const model of MODELS) {
+      used = model;
+      r = await call(model);
+      if (r.status === 400) r = await call(model, false); // model may not accept reasoning_effort
+      tried.push(`${model}:${r.status}`);
+      if (![404, 429, 503].includes(r.status)) break;
     }
     if (!r.ok) {
       // Pass the provider's own message through (it never contains the key) so setup problems are diagnosable.
       const detail = (await r.text().catch(() => "")).slice(0, 1200);
-      return Response.json({ error: `AI provider error ${r.status}`, detail, model: MODEL }, { status: 502 });
+      return Response.json({ error: `AI provider error ${r.status}`, detail, tried }, { status: 502 });
     }
     const data = await r.json();
     const raw = data.choices?.[0]?.message?.content || "";
     const { text, meta } = parseReply(raw);
     if (!text) return bad(502, "Empty reply");
-    return Response.json({ text, meta, adapted: { pace: s.pace, level: s.level, tone: s.tone, maxHints } });
+    return Response.json({ text, meta, model: used, adapted: { pace: s.pace, level: s.level, tone: s.tone, maxHints } });
   } catch {
     return bad(504, "AI timed out");
   }
