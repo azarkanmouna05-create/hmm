@@ -64,7 +64,11 @@ export async function POST(request) {
       }),
       signal: AbortSignal.timeout(25000),
     });
-    if (!r.ok) return bad(502, `AI provider error ${r.status}`);
+    if (!r.ok) {
+      // Pass the provider's own message through (it never contains the key) so setup problems are diagnosable.
+      const detail = (await r.text().catch(() => "")).slice(0, 400);
+      return Response.json({ error: `AI provider error ${r.status}`, detail, model: MODEL }, { status: 502 });
+    }
     const data = await r.json();
     const raw = data.choices?.[0]?.message?.content || "";
     const { text, meta } = parseReply(raw);
