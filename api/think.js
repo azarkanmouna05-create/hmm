@@ -7,7 +7,7 @@
 import { CH, DEFAULT_POLICY, PACES, TONES, LEVELS, allowedChars, clampLevel, buildPrompt, parseReply } from "../public/js/engine/engine.js";
 
 const BASE = process.env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai";
-const MODEL = process.env.AI_MODEL || "gemini-2.5-flash";
+const MODEL = process.env.AI_MODEL || "gemini-3.8-flash";
 const KEY = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || "";
 const MAX_TURNS = 40, MAX_CHARS = 2000;
 
