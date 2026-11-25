@@ -33,6 +33,7 @@ export class Pet {
     this.layer.className = "pet-layer";
     this.node = document.createElement("div");
     this.node.className = "pet is-hidden";
+    this.node.style.transform = "translate(-200px, -200px)";   // park off-screen until placed
     this.cham = createChameleon({ size: W, label: "hmm.'s chameleon" });
     this.node.append(this.cham.el);
     this.layer.append(this.node);

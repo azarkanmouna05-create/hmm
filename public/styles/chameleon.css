@@ -61,3 +61,5 @@ html { transition: --cham-h 6s linear; }
 .pet { position: absolute; left: 0; top: 0; will-change: transform, opacity; transition: opacity .7s var(--ease); }
 .pet .cham { pointer-events: auto; cursor: pointer; }
 .pet.is-hidden { opacity: 0; }
+/* An invisible pet must never catch taps meant for the screen underneath. */
+.pet.is-hidden, .pet.is-hidden .cham { pointer-events: none !important; }
