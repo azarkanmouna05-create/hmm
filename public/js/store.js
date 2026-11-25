@@ -14,7 +14,7 @@ const LS = {
 const STARTER_PROFILE = {
   name: "Mouna", program: "BAI", langs: ["English", "Darija"],
   hintPace: "Small steps", challenge: "Gentle", tone: "Encouraging",
-  snap: { stuck: "freeze" }, skills: { solve: 0, explain: 0, argue: 0 },
+  skills: { solve: 0, explain: 0, argue: 0 },
   sessions: 0, history: [], noticed: null, lastChange: "",
 };
 
@@ -84,7 +84,7 @@ export const store = {
     let ex = { stuckStep: s.step || "", misconception: "", noticed: "" };
     try {
       const token = await db.accessToken();
-      const r = await fetch("/api/reflect", { method: "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      const r = await fetch("/api/reflect", { signal: AbortSignal.timeout(10000), method: "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ char: s.char, task: { topic: task.topic, steps: task.steps || [], misconceptions: task.misconceptions || [] },
           hints: s.hints, maxHints: s.maxHints, conf, stuck, unlocked, step: s.step,
           transcript: s.msgs.filter((m) => !m.hidden && !m.err && !m.pending).map((m) => ({ role: m.role, content: m.content })) }) });

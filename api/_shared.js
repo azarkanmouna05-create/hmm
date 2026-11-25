@@ -28,7 +28,8 @@ export async function authAndPolicy(request) {
 }
 
 /* Returns { ok, text, model } or { ok:false, status, detail, tried }. */
-export async function chat(messages, { temperature = 0.6, maxTokens = 600, json = false } = {}) {
+export async function chat(messages, { temperature = 0.6, maxTokens = 600, json = false, deadlineMs = 25000 } = {}) {
+  const deadline = Date.now() + deadlineMs;
   const call = (model, thinkingOff = true) => fetch(`${BASE}/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${KEY}` },
@@ -38,16 +39,18 @@ export async function chat(messages, { temperature = 0.6, maxTokens = 600, json 
       // Gemini "thinks" before answering by default; short turns don't need it and it eats the token budget.
       ...(thinkingOff && BASE.includes("generativelanguage") ? { reasoning_effort: "none" } : {}),
     }),
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(Math.max(1000, Math.min(15000, deadline - Date.now()))),
   });
   let r, used, tried = [];
   for (const model of MODELS) {
+    if (Date.now() > deadline - 1000) break;   // stay inside the time budget
     used = model;
-    r = await call(model);
-    if (r.status === 400) r = await call(model, false); // model may not accept reasoning_effort / json mode
-    tried.push(`${model}:${r.status}`);
-    if (![404, 429, 503].includes(r.status)) break;
+    r = await call(model).catch(() => null);                       // a slow model times out → try the next
+    if (r?.status === 400) r = await call(model, false).catch(() => null); // model may not accept reasoning_effort / json mode
+    tried.push(`${model}:${r ? r.status : "timeout"}`);
+    if (r && ![404, 429, 503].includes(r.status)) break;
   }
+  if (!r) return { ok: false, status: 504, detail: "time budget used up", tried };
   if (!r.ok) return { ok: false, status: r.status, detail: (await r.text().catch(() => "")).slice(0, 1200), tried };
   const data = await r.json();
   return { ok: true, text: data.choices?.[0]?.message?.content || "", model: used };

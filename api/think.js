@@ -63,7 +63,7 @@ export async function POST(request) {
       meta = found ? { ...meta, note: fb.note, fallback: true } : fb;
     }
     return Response.json({ text, meta, model: used, adapted: { pace: s.pace, level: s.level, tone: s.tone, maxHints } });
-  } catch {
+  } catch (e) {
     return bad(504, "AI timed out");
   }
 }

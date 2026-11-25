@@ -120,7 +120,7 @@ export function insights({ path }) {
           <div><b>${a.students}</b><span>students</span></div><div><b>${a.sessions}</b><span>sessions</span></div>
           <div><b>${a.avg_conf ?? "–"}</b><span>avg confidence /5</span></div><div><b>${a.avg_hints ?? "–"}</b><span>avg hints</span></div>
           <div><b>${a.answer_requests}</b><span>asked for the answer</span></div>
-          <div><b>${Object.entries(a.chars || {}).map(([k, n]) => `${CH[k]?.initial || k}·${n}`).join(" ")}</b><span>characters used</span></div>
+          <div><b style="font-size:15px;line-height:1.35">${Object.entries(a.chars || {}).map(([k, n]) => `${CH[k]?.name || k} ${n}`).join("<br>")}</b><span>characters used</span></div>
         </div>
         <h2 class="section-title">Where the class gets stuck</h2>${bars(a.stuck || [], "socrates")}
         <h2 class="section-title">Common misconceptions</h2>${bars(a.misconceptions || [], "rival")}

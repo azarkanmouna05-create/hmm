@@ -32,7 +32,7 @@ Transcript:
 ${lines}`;
 
   try {
-    const r = await chat([{ role: "user", content: prompt }], { temperature: 0.2, maxTokens: 300, json: true });
+    const r = await chat([{ role: "user", content: prompt }], { temperature: 0.2, maxTokens: 300, json: true, deadlineMs: 8000 });
     if (!r.ok) return Response.json(fallback);
     const m = r.text.match(/\{[\s\S]*\}/);
     const j = m ? JSON.parse(m[0]) : {};
