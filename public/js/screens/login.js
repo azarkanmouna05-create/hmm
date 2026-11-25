@@ -33,6 +33,14 @@ export function render({ path }) {
       <button class="btn btn--ink auth__submit" id="go">${button}</button>
       ${!db.isConfigured() ? `<button type="button" class="btn btn--ghost auth__submit" id="demo">Continue in demo mode</button>` : ""}
     </form>
+    <div class="auth__demo" id="demo-box" hidden>
+      <p class="kicker" style="color:var(--muted)">Class demo · one tap, no password</p>
+      <div class="auth__demo-row">
+        <button class="btn btn--sm btn--ghost" data-demo="student"><span class="initial initial--sm initial--socrates" aria-hidden="true">M</span>Student</button>
+        <button class="btn btn--sm btn--ghost" data-demo="professor"><span class="initial initial--sm initial--talmid" aria-hidden="true">S</span>Professor</button>
+        <button class="btn btn--sm btn--ghost" data-demo="admin"><span class="initial initial--sm initial--rival" aria-hidden="true">A</span>Admin</button>
+      </div>
+    </div>
     <p class="auth__links">
       ${mode === "signin" ? `<a href="#/login/forgot">Forgot password?</a> · <a href="#/login/signup">New here? Create your account</a>`
         : `<a href="#/login">Back to sign in</a>`}
@@ -50,6 +58,12 @@ export function render({ path }) {
         const pw = $("#pw"); const show = pw.type === "password";
         pw.type = show ? "text" : "password"; $("#show").textContent = show ? "Hide" : "Show";
       });
+      if (db.isConfigured()) db.demoEnabled().then((on) => { if (on) $("#demo-box").hidden = false; });
+      el.querySelectorAll("[data-demo]").forEach((b) => b.addEventListener("click", async () => {
+        el.querySelectorAll("[data-demo]").forEach((x) => (x.disabled = true)); msg("");
+        try { await db.demoSignIn(b.dataset.demo); location.hash = "#/"; }
+        catch (err) { msg(err.message); el.querySelectorAll("[data-demo]").forEach((x) => (x.disabled = false)); }
+      }));
       $("#demo")?.addEventListener("click", () => { sessionStorage.setItem("hmm.demo", "1"); location.hash = "#/"; });
       $("#f").addEventListener("submit", async (e) => {
         e.preventDefault();

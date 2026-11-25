@@ -1,6 +1,6 @@
 /* Service worker: makes hmm. installable and opens instantly/offline.
    App shell = cache-first. /api/* (AI + data) is never cached — always goes to the network. */
-const VERSION = "hmm-v3";
+const VERSION = "hmm-v4";
 const SHELL = [
   "/", "/index.html", "/manifest.webmanifest",
   "/styles/tokens.css", "/styles/base.css", "/styles/chameleon.css",

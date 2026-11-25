@@ -165,3 +165,7 @@ a { color: inherit; }
 
 /* placeholder for screens built in later steps */
 .soon { padding: 28px var(--gutter); display: flex; flex-direction: column; gap: 12px; }
+.auth__demo { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--hairline); }
+.auth__demo-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.auth__demo-row .btn { gap: 8px; padding-left: 6px; flex: 1; justify-content: flex-start; min-height: 40px; }
+.auth__demo-row .initial--sm { width: 26px; height: 26px; font-size: 13px; }

@@ -50,6 +50,16 @@ export async function resetPassword(email) {
   const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: location.origin + "/#/login" });
   if (error) throw friendly(error);
 }
+export async function demoEnabled() {
+  try { return (await (await fetch("/api/demo-login")).json()).enabled; } catch { return false; }
+}
+export async function demoSignIn(role) {
+  const r = await fetch("/api/demo-login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ role }) });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error || "Demo sign-in failed.");
+  const { error } = await client.auth.setSession({ access_token: d.access_token, refresh_token: d.refresh_token });
+  if (error) throw friendly(error);
+}
 export async function signOut() { await client?.auth.signOut(); cache.clear(); }
 
 function friendly(e) {
