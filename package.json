@@ -5,6 +5,6 @@
   "description": "hmm. — from hmm. to aha. A Socratic AI study companion (PWA).",
   "type": "module",
   "scripts": {
-    "dev": "npx --yes serve@14.2.4 public -l 4173"
+    "dev": "node scripts/dev.js"
   }
 }

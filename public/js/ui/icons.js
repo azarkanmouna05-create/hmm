@@ -7,4 +7,6 @@ export const icons = {
   reflect: s(`<path d="M6.5 4h11v16l-5.5-4-5.5 4z"/>`),
   courses: s(`<path d="M4 5h6v14H4zM14 5h6v14h-6z"/>`),
   me: s(`<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.2-3.8 4-5.5 7.5-5.5s6.3 1.7 7.5 5.5"/>`),
+  back: s(`<path d="M15 5l-7 7 7 7"/>`),
+  send: s(`<path d="M12 19V5M6 11l6-6 6 6"/>`, 20),
 };

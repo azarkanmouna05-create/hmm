@@ -98,3 +98,47 @@ a { color: inherit; }
 .tabbar svg { width: 24px; height: 24px; }
 
 .sample-label { font: var(--t-caption); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+
+/* ---------- S04 · Session (dialogue, E2) ---------- */
+.session { display: flex; flex-direction: column; height: 100dvh; max-height: 100dvh; }
+.session__head { display: flex; align-items: center; gap: 10px; padding: 14px 18px 8px 14px; }
+.session__head .icon-btn { margin: -10px -6px -10px -10px; }
+.session__title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.session__title b { font: var(--t-ui-strong); }
+.session__title span { font: var(--t-small); font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.adapted { margin: 0; padding: 4px var(--gutter) 10px; font: var(--t-small); font-size: 12.5px; color: var(--muted); border-bottom: 1px solid var(--hairline); }
+.adapted > span:first-child { color: var(--ink); font-weight: 500; }
+.adapted__chip { background: none; border: 0; padding: 4px 0; font: inherit; color: var(--ink); text-decoration: underline dotted var(--hairline); text-underline-offset: 3px; }
+
+.dialogue { flex: 1; overflow-y: auto; padding: 18px var(--gutter) 12px; display: flex; flex-direction: column; gap: 16px; -webkit-overflow-scrolling: touch; }
+.dialogue__problem { font: 600 22px/1.25 var(--font-serif); margin: 0; }
+#turns { display: flex; flex-direction: column; gap: 16px; }
+.turn { display: flex; flex-direction: column; gap: 4px; }
+.turn p { margin: 0; font: 400 17px/1.45 var(--font-serif); }
+.turn__who { font: 600 11px/1 var(--font-ui); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+.turn--ai .turn__who { color: var(--char, var(--socrates)); }
+.turn--me p { font-style: italic; color: #3A3631; }
+.turn--sys { padding: 12px 14px; border: 1px solid var(--hairline); border-radius: var(--radius-sm); gap: 10px; align-items: flex-start; }
+.turn--sys p { font: var(--t-voice); }
+.thinking { color: var(--muted); font-style: italic; }
+.thinking::after { content: "…"; display: inline-block; width: 1.2em; animation: think 1.4s steps(4) infinite; overflow: hidden; vertical-align: bottom; }
+@keyframes think { from { width: 0; } to { width: 1.2em; } }
+
+/* the "why" margin note: orange rule + chameleon */
+.why { display: flex; gap: 10px; align-items: flex-start; padding: 2px 0 2px 12px; border-left: 2px solid var(--why-rule); }
+.why__cham { flex: none; width: 30px; margin-top: 2px; }
+.why p { margin: 0; font: italic 400 14.5px/1.4 var(--font-serif); color: var(--muted); }
+
+.hints { display: flex; align-items: center; gap: 8px; padding: 10px var(--gutter) 8px; min-height: 40px; border-bottom: 1px solid var(--hairline); }
+.hints__label { font: var(--t-small); font-size: 12.5px; color: var(--muted); }
+.hints__dots { display: flex; gap: 4px; }
+.hints__dots i { width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--socrates); }
+.hints__dots i.on { background: var(--socrates); }
+.hints__gap { flex: 1; }
+.hints__ask { background: none; border: 0; padding: 8px 0; font: 600 13px/1 var(--font-ui); color: var(--socrates); }
+.hints__ask:disabled { color: var(--muted); font-weight: 500; }
+
+.composer { display: flex; gap: 10px; padding: 12px var(--gutter) calc(14px + env(safe-area-inset-bottom)); background: var(--paper); }
+.composer input { flex: 1; min-width: 0; height: 46px; padding: 0 17px; border: 1px solid var(--hairline); border-radius: var(--radius-pill); background: var(--paper-raised); font: 400 15px/1 var(--font-ui); }
+.composer input::placeholder { color: var(--muted); }
+.composer__send { flex: none; width: 46px; height: 46px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; display: grid; place-items: center; }

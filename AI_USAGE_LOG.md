@@ -15,3 +15,13 @@ Entries are factual. The reasoning column is mine to review and rewrite in my ow
 - **Bugs caught by screenshot review and fixed:** (a) walking legs detached from the body because a CSS animation overrode the SVG position; (b) the "tough" colour made pink stripes, which read as childish, so stripes now shift to gold; (c) the pet sometimes teleported instead of walking in, so it now only enters from a side where the path is free of text.
 - **Not done in step 1:** Figma frame E2 couldn't be read (Figma Starter plan tool-call limit reached), so the Socrates dialogue in step 2 relies on the E2 structure listing plus my brief. Arabic-script font for Darija/Arabic is not added yet.
 - **YouTube motion tutorial:** couldn't be accessed from the build environment; motion follows the written spec in the Figma "Pet behaviour" note.
+
+| # | Date | Tool | Task / prompt (summary) | Output | Accepted / rejected / changed | Why |
+|---|------|------|-------------------------|--------|-------------------------------|-----|
+| 4 | 2026-11-25 | Claude Code | Step 2: port prototype logic (buildPrompt, META protocol, derive, profile-update rule) into `public/js/engine/engine.js`; serverless `api/think.js`; Socrates dialogue screen (S04a) from E2 | Code | Accepted, with changes (see notes) | — |
+
+### Notes for entry 4
+- **Prompt text is reused from my prototype unchanged.** Only the structure moved, so the same rules (never the answer, worked example of a *similar* problem after 2+ answer requests) apply.
+- **The prompt is now built on the server, not in the browser.** A student could otherwise edit the rules in dev tools. The server also enforces admin rules: characters turned off per course (403), hint cap, allowed languages, challenge range.
+- **Provider-agnostic.** The server calls any OpenAI-compatible endpoint; Gemini is the default. To switch provider, change three environment variables.
+- **Testing done:** rule enforcement tested directly against the API (Rival blocked in MATH 1101, hint cap, missing key → "hmm. can't think right now"). The session flow (turns, hints, "why" note, settings change, session restored after reload) was tested against a *local test stub* that returns obviously fake text. **Not yet tested against real Gemini**: that happens once the key is in Vercel.

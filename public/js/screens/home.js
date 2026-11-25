@@ -19,7 +19,7 @@ export function render() {
 
   <section class="feed">
     <article class="today">
-      <p class="kicker">Today's question · MATH 1101</p>
+      <p class="kicker">Today's question · MATH 1101 <span class="sample-label" style="color:var(--muted);margin-left:6px">Sample</span></p>
       <h1 class="headline" style="margin-top:10px">Why does the product rule add two terms instead of one?</h1>
       <p class="dek" style="margin-top:10px">You froze on step 3 last time, so Socrates will go in small steps today. You'll get there yourself.</p>
       <div class="byline" style="margin-top:10px">

@@ -21,7 +21,7 @@ const WANDER_MS = [24000, 36000];
 const SLEEP_AFTER_MS = 45000;
 const NEAR_PX = 110;
 
-const TEXTY = "h1,h2,h3,p,li,label,a,button,input,textarea,select,.initial,.kicker,.byline__who,.thinker__text,[data-no-pet]";
+const TEXTY = ".tabbar,h1,h2,h3,p,li,label,a,button,input,textarea,select,.initial,.kicker,.byline__who,.thinker__text,[data-no-pet]";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const rand = (a, b) => a + Math.random() * (b - a);
 
@@ -57,7 +57,7 @@ export class Pet {
         const r = el.getBoundingClientRect();
         return { el, left: r.left - L.left, right: r.right - L.left, y: r.top - L.top };
       })
-      .filter((p) => p.right - p.left > W && p.y - H > vTop + 40 && p.y < vBot - 90);
+      .filter((p) => p.right - p.left > W && p.y - H > vTop + 40 && p.y < vBot - 10);
   }
 
   _obstacles() {

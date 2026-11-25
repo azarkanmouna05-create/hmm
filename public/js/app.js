@@ -5,6 +5,7 @@ import { Pet } from "./chameleon/pet.js";
 import { mountInlineChameleons, setChameleonMood } from "./chameleon/chameleon.js";
 import * as home from "./screens/home.js";
 import * as playground from "./screens/chameleon-playground.js";
+import * as session from "./screens/session.js";
 
 const routes = {
   "/": home,
@@ -22,7 +23,7 @@ function launchedThisSession() {
 
 function render() {
   const path = location.hash.replace(/^#/, "") || "/";
-  const screen = routes[path] || home;
+  const screen = routes[path] || (path.startsWith("/session/") ? session : home);
   pet?.destroy();
   const { html, mount, pet: wantsPet = true } = screen.render({ path });
   app.innerHTML = `<main class="screen">${html}</main>`;
