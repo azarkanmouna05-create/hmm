@@ -19,7 +19,7 @@ insert into public.session_aggregates(course,char,anon_id,sample) select 'ECON 2
 select count(*) from public.tasks;
 \echo '== demo professor: my courses (expect 3 WITH join codes)'
 select pg_temp.act('22222222-2222-2222-2222-222222222222'); select public.my_courses();
-\echo '== demo professor asks insights for MATH (expect a result, demo data)'
+\echo '== demo professor asks insights for MATH (expect NOT hidden: 4 real classmates + demo Mouna = 5, includes_sample true)'
 select public.class_insights('MATH 1101');
 reset role;
 set role authenticated;
@@ -27,3 +27,8 @@ set role authenticated;
 select pg_temp.act('55555555-5555-5555-5555-555555555555'); select public.class_insights('MATH 1101');
 \echo '== professor tries to join a course as a student (expect ERROR only students)'
 select public.join_course('CALC-7Q2K');
+\echo '== real professor assigned to MATH sees real students only (expect 4 → hidden under floor 5)'
+reset role;
+insert into public.teaching(user_id, course_code) values ('55555555-5555-5555-5555-555555555555','MATH 1101');
+set role authenticated;
+select pg_temp.act('55555555-5555-5555-5555-555555555555'); select public.class_insights('MATH 1101');

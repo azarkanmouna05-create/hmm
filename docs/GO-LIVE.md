@@ -12,6 +12,12 @@ The same app serves both. Demo accounts are flagged in the database, and their d
   database. Real professors see real students only; the demo professor sees demo data only.
 - The AI only answers signed-in users; the AI key never leaves the server.
 
+## During the class demo
+- Classmates sign up as **themselves** with their own @aui.ma email ("Create your account"), then join a demo
+  course with its code (`CALC-7Q2K`, `MICRO-4M8T`, `SAD-9H3P`). They are real student accounts.
+- The demo professor sees everyone in the demo courses (classmates + labelled sample data), always behind the
+  5-student floor. Real professors see real students only.
+
 ## Before real students use it (checklist)
 1. Vercel → Environment Variables → `DEMO_LOGINS` = `off` → Redeploy. This hides the one-tap demo buttons.
 2. Supabase → Authentication → Email → turn **Confirm email ON**, so accounts must prove they own the address.

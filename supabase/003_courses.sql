@@ -93,6 +93,36 @@ do $$ begin
     alter function public.class_insights(text, uuid) rename to class_insights_unchecked;
   end if;
 end $$;
+-- Demo viewers (the demo professor/admin) see EVERYONE in their courses: classmates who signed up as
+-- themselves plus labelled sample data. Real professors see real students only.
+create or replace function public.class_insights_unchecked(p_course text, p_task uuid default null)
+returns jsonb language plpgsql volatile security definer set search_path = public as $$
+declare floor int; n int; uniq int; result jsonb; demo_viewer boolean := public.is_demo();
+begin
+  if public.my_role() not in ('professor','admin') then raise exception 'not allowed'; end if;
+  select min_group into floor from public.policy where id = 1;
+  create temp table if not exists _rows on commit drop as select * from public.session_aggregates limit 0;
+  truncate _rows;
+  insert into _rows select * from public.session_aggregates
+    where course = p_course and (p_task is null or task_id = p_task) and (demo_viewer or not sample);
+  select count(*), count(distinct anon_id) into n, uniq from _rows;
+  if uniq < floor then
+    return jsonb_build_object('hidden', true, 'students', uniq, 'floor', floor);
+  end if;
+  select jsonb_build_object(
+    'hidden', false, 'sessions', n, 'students', uniq, 'floor', floor,
+    'includes_sample', (select bool_or(sample) from _rows),
+    'avg_conf', (select round(avg(conf)::numeric, 1) from _rows),
+    'avg_hints', (select round(avg(hints)::numeric, 1) from _rows),
+    'answer_requests', (select sum(coalesce(answer_req, 0)) from _rows),
+    'stuck', (select coalesce(jsonb_agg(jsonb_build_object('label', stuck_step, 'n', c) order by c desc), '[]')
+              from (select stuck_step, count(*) c from _rows where coalesce(stuck_step,'') not in ('','none') group by stuck_step) x),
+    'misconceptions', (select coalesce(jsonb_agg(jsonb_build_object('label', misconception, 'n', c) order by c desc), '[]')
+              from (select misconception, count(*) c from _rows where coalesce(misconception,'') not in ('','other') group by misconception) y),
+    'chars', (select coalesce(jsonb_object_agg(char, c), '{}') from (select char, count(*) c from _rows group by char) z)
+  ) into result;
+  return result;
+end $$;
 revoke all on function public.class_insights_unchecked(text, uuid) from public, anon, authenticated;
 create or replace function public.class_insights(p_course text, p_task uuid default null) returns jsonb
 language plpgsql volatile security definer set search_path = public as $$
