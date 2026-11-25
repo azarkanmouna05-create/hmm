@@ -69,7 +69,7 @@ export const store = {
   // A free session the student starts inside one of their courses, on their own topic.
   startFree(char, course, topic) {
     const kind = Object.keys(KIND).find((k) => KIND[k] === char);
-    return this.startSession(char, { id: null, course, kind, topic, title: topic.length > 48 ? topic.slice(0, 46) + "…" : topic });
+    return this.startSession(char, { id: null, course, kind, topic, title: `your ${kind === "claim" ? "claim" : "question"} · ${course}` });
   },
   charInfo: CH,
 };

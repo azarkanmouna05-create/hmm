@@ -52,3 +52,12 @@ Entries are factual. The reasoning column is mine to review and rewrite in my ow
   - an admin can change max hints
 - **Security choice (from the course's audit idea):** the AI endpoint now requires a signed-in user, so strangers can't burn the AI quota.
 - **Role from email** is a *demo* rule copied from my prototype. A real deployment would take roles from the university's directory (SSO). Worth noting in the ethics/limitations section.
+
+| # | Date | Tool | Task / prompt (summary) | Output | Accepted / rejected / changed | Why |
+|---|------|------|-------------------------|--------|-------------------------------|-----|
+| 7 | 2026-11-25 | Claude Code | Real-use safety (002), courses with join codes (003), one-tap demo sign-in, classmates as themselves; live end-to-end test | migrations, My courses + course page, `supabase/tests/run.sh` | Accepted | See notes |
+
+### Notes for entry 7
+- **My decisions (Mouna):** keep a one-tap demo with a fixed demo password ("it's just a demo"), but make the real app safe outside the demo; students join courses with a **join code** from the professor; classmates take part in the demo **as themselves**.
+- **Live checks on the real Supabase project:** demo roles/courses correct; a Gmail sign-up is refused; demo student joined → MATH 1101 course page → own question with Socrates → real Gemini reply in EN + Darija, refused to give the answer, "why" note shown; the chat was saved privately (4 messages), and the professor account got `[]` when trying to read private sessions.
+- **Repeatable DB tests:** `supabase/tests/run.sh` rebuilds a local Postgres, applies all scripts in order, and prints expected vs actual for every privacy rule.

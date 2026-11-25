@@ -7,6 +7,7 @@ import * as db from "../db.js";
 import { icons } from "../ui/icons.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmtDue = (d) => { const t = new Date(d + "T12:00"); return isNaN(t) ? d : t.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }); };
 const PROMPT = {
   socrates: { label: "Your problem", ph: "e.g. Find the derivative of x³ · eˣ", go: "Start with Socrates" },
   talmid: { label: "What will you teach Talmid?", ph: "e.g. Why demand curves slope down", go: "Teach Talmid" },
@@ -93,7 +94,7 @@ function coursePage(code) {
     <ul class="thinkers">${tasks.map((t) => {
       const k = { problem: "socrates", concept: "talmid", claim: "rival" }[t.kind] || "socrates";
       return `<li class="thinker"><span class="initial initial--${k}" aria-hidden="true">${CH[k].initial}</span>
-        <span class="thinker__text"><b>${esc(t.topic)}</b><span>${CH[k].name}${t.due ? " · due " + esc(t.due) : ""}${t.sample ? " · sample task" : ""}</span></span>
+        <span class="thinker__text"><b>${esc(t.topic)}</b><span>${CH[k].name}${t.due ? " · due " + esc(fmtDue(t.due)) : ""}${t.sample ? " · sample task" : ""}</span></span>
         <button class="btn btn--sm btn--ghost" data-task="${esc(t.id)}" data-char="${k}">Start</button></li>`;
     }).join("")}</ul><hr class="rule">` : ""}
 
