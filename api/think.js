@@ -64,16 +64,16 @@ export async function POST(request) {
       }),
       signal: AbortSignal.timeout(20000),
     });
-    // Busy/rate-limited providers usually recover within seconds: retry twice with a short backoff.
+    // A busy provider (503) usually recovers within seconds: retry twice with a short backoff.
     let r = await call();
     for (const wait of [1200, 3000]) {
-      if (r.status !== 503 && r.status !== 429) break;
+      if (r.status !== 503) break; // 429 = quota: retrying only burns more quota
       await new Promise((res) => setTimeout(res, wait));
       r = await call();
     }
     if (!r.ok) {
       // Pass the provider's own message through (it never contains the key) so setup problems are diagnosable.
-      const detail = (await r.text().catch(() => "")).slice(0, 400);
+      const detail = (await r.text().catch(() => "")).slice(0, 1200);
       return Response.json({ error: `AI provider error ${r.status}`, detail, model: MODEL }, { status: 502 });
     }
     const data = await r.json();
