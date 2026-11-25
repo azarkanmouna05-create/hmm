@@ -175,6 +175,9 @@ begin
   update public.policy set chars = '{"MATH 1101":{"socrates":true,"talmid":true,"rival":false},"ECON 2301":{"socrates":true,"talmid":true,"rival":true},"SAD 3301":{"socrates":true,"talmid":true,"rival":true}}',
     max_hints = 4, min_group = 5, retention = '1 semester', challenge_min = 'Gentle', challenge_max = 'Tough',
     langs = array['English','Français','Darija','العربية'], updated_at = now() where id = 1;
+  -- demo student starts fresh: Learning Snapshot again, empty private history (real students untouched)
+  update public.profiles set data = '{}'::jsonb where user_id in (select user_id from public.user_roles where demo and role = 'student');
+  delete from public.private_sessions where user_id in (select user_id from public.user_roles where demo and role = 'student');
   perform public.seed_sample_data();
 end $$;
 grant execute on function public.reset_demo() to authenticated;

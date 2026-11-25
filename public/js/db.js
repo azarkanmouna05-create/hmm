@@ -156,7 +156,11 @@ export async function getTasks() {
 /* ---------- professor ---------- */
 const rpc = async (fn, args = {}) => {
   const { data, error } = await client.rpc(fn, args);
-  if (error) throw new Error(error.message.replace(/^hmm: /, ""));
+  if (error) {
+    if (/schema cache|does not exist|PGRST202/i.test(error.message + error.code))
+      throw new Error("This screen needs the last database setup step: run supabase/004_staff_and_sample.sql in Supabase → SQL Editor.");
+    throw new Error(error.message.replace(/^hmm: /, ""));
+  }
   return data;
 };
 export const classInsights = (course, task = null) => rpc("class_insights", { p_course: course, p_task: task });
