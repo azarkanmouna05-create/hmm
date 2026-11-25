@@ -295,3 +295,5 @@ form.snap, #ins, #dash, #moves, .feed > form, .auth__form { display: flex; flex-
   .conf .pick { padding: 10px 0; }
 }
 .link-btn { align-self: flex-start; background: none; border: 0; padding: 8px 0; font: 500 13px/1.35 var(--font-ui); color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
+#app, .screen { overflow-x: clip; }
+.auth__demo-row .btn { flex: 1 1 calc(50% - 8px); }

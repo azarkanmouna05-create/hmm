@@ -6,7 +6,7 @@ const SB_URL = process.env.SUPABASE_URL || "";
 const SB_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "";
 const PW = process.env.DEMO_PASSWORD || "hmm-demo-2026";
 const OFF = process.env.DEMO_LOGINS === "off";
-const ACCOUNTS = { student: "mouna@aui.ma", professor: "dr.salma.prof@aui.ma", admin: "it.admin@aui.ma" };
+const ACCOUNTS = { student: "mouna@aui.ma", returning: "ines.demo@aui.ma", professor: "dr.salma.prof@aui.ma", admin: "it.admin@aui.ma" };
 
 export async function GET() {
   return Response.json({ enabled: !OFF && !!(SB_URL && SB_KEY) });

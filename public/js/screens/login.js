@@ -36,7 +36,8 @@ export function render({ path }) {
     <div class="auth__demo" id="demo-box" hidden>
       <p class="kicker" style="color:var(--muted)">Class demo · one tap, no password</p>
       <div class="auth__demo-row">
-        <button class="btn btn--sm btn--ghost" data-demo="student"><span class="initial initial--sm initial--socrates" aria-hidden="true">M</span>Student</button>
+        <button class="btn btn--sm btn--ghost" data-demo="student"><span class="initial initial--sm initial--socrates" aria-hidden="true">M</span>New student</button>
+        <button class="btn btn--sm btn--ghost" data-demo="returning"><span class="initial initial--sm initial--socrates" aria-hidden="true">I</span>Returning student</button>
         <button class="btn btn--sm btn--ghost" data-demo="professor"><span class="initial initial--sm initial--talmid" aria-hidden="true">S</span>Professor</button>
         <button class="btn btn--sm btn--ghost" data-demo="admin"><span class="initial initial--sm initial--rival" aria-hidden="true">A</span>Admin</button>
       </div>

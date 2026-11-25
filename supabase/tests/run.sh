@@ -20,4 +20,6 @@ echo "### apply 003_courses.sql (twice: must be re-runnable)"; q -v ON_ERROR_STO
 echo "### test 30"; q -f "$HERE/30_courses.sql"
 echo "### apply 004_staff_and_sample.sql (twice)"; q -v ON_ERROR_STOP=1 -f "$ROOT/004_staff_and_sample.sql"; q -v ON_ERROR_STOP=1 -f "$ROOT/004_staff_and_sample.sql"
 echo "### test 40"; q -f "$HERE/40_staff_and_sample.sql"
+echo "### apply 005_demo_story.sql (twice)"; q -v ON_ERROR_STOP=1 -f "$ROOT/005_demo_story.sql"; q -v ON_ERROR_STOP=1 -f "$ROOT/005_demo_story.sql"
+echo "### test 50"; q -f "$HERE/50_demo_story.sql"
 su postgres -c "$B/pg_ctl -D $W/data stop -m fast" >/dev/null 2>&1
