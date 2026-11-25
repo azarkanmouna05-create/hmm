@@ -1,17 +1,19 @@
 /* POST /api/demo-login {role} — one-tap demo sign-in for the class presentation.
-   The demo password lives only in Vercel (DEMO_PASSWORD); it is never sent to the browser. The first tap
-   creates the account (role comes from the email, as for everyone). Turn off by removing DEMO_PASSWORD. */
+   Demo accounts use a fixed, publicly known password (Mouna's choice: "it's just a demo"). Anyone who reads
+   this repo could sign in to the three demo accounts; they hold sample data only. Set DEMO_PASSWORD in Vercel
+   to override it, or DEMO_LOGINS=off to turn the buttons off. The first tap creates the account. */
 const SB_URL = process.env.SUPABASE_URL || "";
 const SB_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "";
-const PW = process.env.DEMO_PASSWORD || "";
+const PW = process.env.DEMO_PASSWORD || "hmm-demo-2026";
+const OFF = process.env.DEMO_LOGINS === "off";
 const ACCOUNTS = { student: "mouna@aui.ma", professor: "dr.salma.prof@aui.ma", admin: "it.admin@aui.ma" };
 
 export async function GET() {
-  return Response.json({ enabled: !!(SB_URL && SB_KEY && PW.length >= 8) });
+  return Response.json({ enabled: !OFF && !!(SB_URL && SB_KEY) });
 }
 
 export async function POST(request) {
-  if (!SB_URL || !SB_KEY || PW.length < 8) return Response.json({ error: "Demo sign-in is turned off." }, { status: 404 });
+  if (OFF || !SB_URL || !SB_KEY) return Response.json({ error: "Demo sign-in is turned off." }, { status: 404 });
   const { role } = await request.json().catch(() => ({}));
   const email = ACCOUNTS[role];
   if (!email) return Response.json({ error: "Unknown demo role" }, { status: 400 });
