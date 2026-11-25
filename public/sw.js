@@ -1,11 +1,11 @@
 /* Service worker: makes hmm. installable and opens instantly/offline.
    App shell = cache-first. /api/* (AI + data) is never cached — always goes to the network. */
-const VERSION = "hmm-v5";
+const VERSION = "hmm-v7";
 const SHELL = [
   "/", "/index.html", "/manifest.webmanifest",
   "/styles/tokens.css", "/styles/base.css", "/styles/chameleon.css",
   "/js/app.js", "/js/chameleon/chameleon.js", "/js/chameleon/pet.js",
-  "/js/screens/home.js", "/js/screens/chameleon-playground.js", "/js/ui/icons.js", "/js/screens/session.js", "/js/engine/engine.js", "/js/store.js", "/js/db.js", "/js/screens/login.js", "/js/screens/staff-soon.js", "/js/screens/courses.js", "/vendor/supabase.js",
+  "/js/screens/home.js", "/js/screens/chameleon-playground.js", "/js/ui/icons.js", "/js/screens/session.js", "/js/engine/engine.js", "/js/store.js", "/js/db.js", "/js/screens/login.js", "/js/screens/courses.js", "/js/screens/snapshot.js", "/js/screens/reflect.js", "/js/screens/profile.js", "/js/screens/professor.js", "/js/screens/admin.js", "/vendor/supabase.js",
   "/fonts/newsreader-latin-wght-normal.woff2", "/fonts/newsreader-latin-wght-italic.woff2",
   "/fonts/inter-latin-wght-normal.woff2", "/fonts/pixelify-sans-latin-700-normal.woff2",
   "/icons/icon-192.png",

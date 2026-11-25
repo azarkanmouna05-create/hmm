@@ -43,8 +43,7 @@ export function render() {
       <p class="dek" style="margin-top:10px">Your professor shares a short code in class. Once you join, your course’s questions show up here.</p>
       <div class="byline" style="margin-top:10px"><span class="byline__spacer"></span><a class="btn btn--ink" href="#/courses">Join a course</a></div></article>`;
 
-  const noticed = P.noticed && P.noticed.confirmed == null ? P.noticed.text
-    : "You do better when you see a worked example first, then try your own. Want me to keep doing that?";
+  const noticed = P.noticed && P.noticed.confirmed == null ? P.noticed.text : "";
 
   const html = `
   <header class="topbar">
@@ -59,19 +58,20 @@ export function render() {
   </nav>
 
   <section class="feed">
+    <div id="invites"></div>
     ${today}
-    <hr class="rule">
+    ${noticed ? `<hr class="rule">
     <aside class="note" aria-label="Something hmm. noticed">
       <span class="note__cham" data-chameleon="40"></span>
       <div class="note__body">
         <div class="note__meta"><b>hmm.</b>noticed something</div>
-        <p class="note__text">${esc(noticed)}</p>
+        <p class="note__text">${esc(noticed)} Is this right?</p>
         <div class="note__actions">
           <button class="btn btn--sm btn--yes">Yes, that’s me</button>
           <button class="btn btn--sm btn--no">Not really</button>
         </div>
       </div>
-    </aside>
+    </aside>` : ""}
     <hr class="rule">
     <h2 class="section-title">Your thinkers</h2>
     <ul class="thinkers">
@@ -86,15 +86,19 @@ export function render() {
   return {
     html,
     mount(el) {
+      // Anonymous help-session invites: shown only if THIS student's private history says the course felt hard.
+      const hard = new Set((P.history || []).filter((h) => h.conf != null && h.conf <= 2).map((h) => h.course));
+      if (hard.size && db.isConfigured()) db.listInvites().then((inv) => {
+        const mine = inv.filter((i) => hard.has(i.course));
+        el.querySelector("#invites").innerHTML = mine.slice(0, 1).map((i) => `<aside class="why" style="margin-bottom:6px"><span class="why__cham" data-chameleon="30"></span>
+          <p>Your professor is running an optional help session for ${esc(i.course)}${i.when ? " · " + esc(i.when) : ""}. Only you can see this invite; nobody knows who got it.</p></aside>`).join("");
+        import("../chameleon/chameleon.js").then((m) => m.mountInlineChameleons(el));
+      }).catch(() => {});
       el.querySelector("#start")?.addEventListener("click", () => {
         store.startSession(k, task);
         location.hash = "#/session/" + k;
       });
-      // Until the Thinking Profile (S06) exists, the avatar offers sign-out.
-      el.querySelector("#me").onclick = async () => {
-        if (!confirm("Sign out of hmm.?")) return;
-        await db.signOut(); location.hash = "#/login";
-      };
+      el.querySelector("#me").onclick = () => { location.hash = "#/me"; };
       el.querySelectorAll(".note__actions .btn").forEach((b) =>
         b.addEventListener("click", async () => {
           const yes = b.classList.contains("btn--yes");

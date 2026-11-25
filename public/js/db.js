@@ -152,3 +152,37 @@ export async function getTasks() {
   cache.set("tasks", data || []);
   return data || [];
 }
+
+/* ---------- professor ---------- */
+const rpc = async (fn, args = {}) => {
+  const { data, error } = await client.rpc(fn, args);
+  if (error) throw new Error(error.message.replace(/^hmm: /, ""));
+  return data;
+};
+export const classInsights = (course, task = null) => rpc("class_insights", { p_course: course, p_task: task });
+export async function createTask(t) {
+  const { data, error } = await client.from("tasks").insert(t).select().single();
+  if (error) throw new Error(/row-level security/.test(error.message) ? "You can only post to courses you teach." : error.message);
+  return data;
+}
+export async function createInvite(inv) { const { error } = await client.from("invites").insert(inv); if (error) throw new Error(error.message); }
+export async function listInvites() { const { data } = await client.from("invites").select("*").order("created_at", { ascending: false }); return data || []; }
+export async function addPlan(course, text) { const { error } = await client.from("plans").insert({ course, text }); if (error) throw new Error(error.message); }
+export async function listPlans() { const { data } = await client.from("plans").select("*").order("created_at", { ascending: false }); return data || []; }
+
+/* ---------- admin ---------- */
+export const campusStats = () => rpc("campus_stats");
+export const assignTeacher = (email, course) => rpc("assign_teacher", { p_email: email, p_course: course });
+export const createCourse = (code, name) => rpc("create_course", { p_code: code, p_name: name });
+export const courseTeachers = () => rpc("course_teachers");
+export const resetDemo = () => rpc("reset_demo");
+export const applyRetention = () => rpc("apply_retention");
+export async function updatePolicy(p) {
+  const row = { chars: p.chars, max_hints: p.maxHints, min_group: p.minGroup, retention: p.retention,
+    challenge_min: p.challengeMin, challenge_max: p.challengeMax, langs: p.langs, updated_at: new Date().toISOString() };
+  if (p.allowedDomains) row.allowed_domains = p.allowedDomains;
+  const { error } = await client.from("policy").update(row).eq("id", 1);
+  if (error) throw new Error(error.message);
+  cache.set("policy", p);
+}
+export async function policyDomains() { const { data } = await client.from("policy").select("allowed_domains").eq("id", 1).maybeSingle(); return data?.allowed_domains || ["aui.ma"]; }

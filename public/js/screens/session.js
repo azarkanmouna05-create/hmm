@@ -38,7 +38,7 @@ export function render({ path }) {
 
     <form class="composer" id="composer">
       <label class="sr-only" for="say">Reply to ${c.name}</label>
-      <input id="say" autocomplete="off" placeholder="Reply to ${c.name}…" enterkeyhint="send">
+      <input id="say" autocomplete="off" placeholder="${{ socrates: "Reply to Socrates…", talmid: "Explain it to Talmid…", rival: "Make your case…" }[s.char]}" enterkeyhint="send">
       <button class="composer__send" aria-label="Send">${icons.send}</button>
     </form>
   </div>`;
@@ -63,7 +63,18 @@ export function render({ path }) {
       }
 
       function renderHints() {
-        if (s.char !== "socrates") { $("#hints").innerHTML = ""; return; }
+        const dots = (n, cls) => `<span class="meter ${cls}" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>`;
+        if (s.char === "talmid") {   // US3: how well the confused classmate now understands
+          $("#hints").innerHTML = `<span class="hints__label">Talmid understands <b>${s.meter}/5</b></span>${dots(s.meter, "meter--talmid")}`;
+          return;
+        }
+        if (s.char === "rival") {    // US4: your points vs the Rival's counters + argument strength
+          $("#hints").innerHTML = `<div class="rival-board">
+            <div><span class="hints__label">Your points ${s.points.length}</span><ul>${s.points.slice(-3).map((p) => `<li>${esc(p)}</li>`).join("") || "<li>…</li>"}</ul></div>
+            <div><span class="hints__label">Rival counters ${s.counters.length}</span><ul>${s.counters.slice(-3).map((p) => `<li>${esc(p)}</li>`).join("") || "<li>…</li>"}</ul></div>
+            <div class="rival-board__strength"><span class="hints__label">Argument strength <b>${s.meter}/5</b></span>${dots(s.meter, "meter--rival")}</div></div>`;
+          return;
+        }
         const left = s.maxHints - s.hints;
         $("#hints").innerHTML = `
           <span class="hints__label">Hints ${s.hints} of ${s.maxHints}</span>
@@ -154,9 +165,9 @@ export function render({ path }) {
         turn(v);
       };
       $("#end").onclick = () => {
-        // Step 3: this opens the Reflection screen (S05). For now, back home.
-        store.clearSession();
-        location.hash = "#/";
+        const said = s.msgs.some((m) => m.role === "user" && !m.hidden);
+        if (!said) { store.clearSession(); location.hash = s.task.course ? "#/course/" + encodeURIComponent(s.task.course) : "#/"; return; }
+        location.hash = "#/reflect/now";
       };
 
       function bindRetry() {

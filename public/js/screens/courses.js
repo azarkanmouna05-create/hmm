@@ -27,9 +27,9 @@ const header = (active) => `
 export const tabbar = (active) => `
   <nav class="tabbar" aria-label="Main">
     <a href="#/" ${active === "home" ? 'aria-current="page"' : ""}>${icons.home}Home</a>
-    <a href="#/reflect">${icons.reflect}Reflect</a>
+    <a href="#/reflect" ${active === "reflect" ? 'aria-current="page"' : ""}>${icons.reflect}Reflect</a>
     <a href="#/courses" ${active === "courses" ? 'aria-current="page"' : ""}>${icons.courses}Courses</a>
-    <a href="#/me">${icons.me}Me</a>
+    <a href="#/me" ${active === "me" ? 'aria-current="page"' : ""}>${icons.me}Me</a>
   </nav>`;
 
 export function render({ path }) {

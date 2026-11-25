@@ -1,6 +1,6 @@
 /* App state. Local-first: everything is cached on the device so screens open instantly; Supabase is the
    source of truth (profile and chats private to the student, protected by row-level security). */
-import { CH, DEFAULT_POLICY, KIND } from "./engine/engine.js";
+import { CH, DEFAULT_POLICY, KIND, updateProfileAfterSession } from "./engine/engine.js";
 import { setChameleonMood } from "./chameleon/chameleon.js";
 import * as db from "./db.js";
 
@@ -28,6 +28,7 @@ export const store = {
   tasks: [SAMPLE_TASK],
   get courses() { return db.cachedCourses(); },
   _profile: null,
+  needsSnapshot: false,
 
   get profile() { return this._profile || db.cachedProfile() || STARTER_PROFILE; },
   async saveProfile(p) { this._profile = p; setChameleonMood(p.challenge.toLowerCase()); await db.saveProfile(p); },
@@ -42,8 +43,8 @@ export const store = {
     this.policy = policy;
     if (db.isConfigured()) this.tasks = tasks.map((t) => ({ ...t, title: t.id === SAMPLE_TASK.id ? SAMPLE_TASK.title : t.topic }));
     if (this.role === "student") {
-      if (profile) this._profile = profile;
-      else if (await db.currentUser()) await this.saveProfile({ ...STARTER_PROFILE }); // first sign-in
+      if (profile) { this._profile = profile; this.needsSnapshot = !profile.snap; }
+      else if (await db.currentUser()) this.needsSnapshot = true;      // first sign-in → Learning Snapshot
       setChameleonMood(this.profile.challenge.toLowerCase());
     }
   },
@@ -72,4 +73,37 @@ export const store = {
     return this.startSession(char, { id: null, course, kind, topic, title: `your ${kind === "claim" ? "claim" : "question"} · ${course}` });
   },
   charInfo: CH,
+
+  /* S05 → after a session: extract labels (AI, server-side), update the profile with the prototype's rule,
+     save the reflection privately, and add ONE anonymised row for the class if the session belongs to a course. */
+  async finishSession({ conf, stuck, unlocked, skipped = false }) {
+    const s = this.session; if (!s) return "";
+    const P = { ...this.profile };
+    const mins = Math.max(1, Math.round((Date.now() - s.start) / 60000));
+    const task = this.tasks.find((t) => t.id && t.id === s.task.id) || s.task;
+    let ex = { stuckStep: s.step || "", misconception: "", noticed: "" };
+    try {
+      const token = await db.accessToken();
+      const r = await fetch("/api/reflect", { method: "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ char: s.char, task: { topic: task.topic, steps: task.steps || [], misconceptions: task.misconceptions || [] },
+          hints: s.hints, maxHints: s.maxHints, conf, stuck, unlocked, step: s.step,
+          transcript: s.msgs.filter((m) => !m.hidden && !m.err && !m.pending).map((m) => ({ role: m.role, content: m.content })) }) });
+      if (r.ok) ex = { ...ex, ...(await r.json()) };
+    } catch {}
+    const change = updateProfileAfterSession(P, { conf, hints: s.hints, skipped, char: s.char });
+    if (ex.noticed && !(P.noticed?.confirmed === false && P.noticed.text === ex.noticed)) P.noticed = { text: ex.noticed, confirmed: null };
+    P.history = [...(P.history || []), { course: s.task.course || "", topic: s.task.topic, char: s.char, conf: skipped ? null : conf, stuck, unlocked, ts: Date.now(), meter: s.meter, hints: s.hints }].slice(-20);
+    await this.saveProfile(P);
+    s.reflection = { conf: skipped ? null : conf, stuck, unlocked, mins, stuckStep: ex.stuckStep, misconception: ex.misconception };
+    await db.savePrivateSession(s).catch(() => {});
+    if (s.task.course && this.courses.some((c) => c.code === s.task.course)) {
+      const acct = await db.myAccount();
+      await db.addAggregate({ course: s.task.course, task_id: s.task.id || null, char: s.char, suggested: s.suggested || null,
+        hints: s.hints, max_hints: s.maxHints, conf: skipped ? null : conf, mins, answer_req: s.answerReq,
+        stuck_step: ex.stuckStep || null, misconception: ex.misconception || null, level: s.level, pace: s.pace,
+        lang: P.langs?.[0] || "English", anon_id: P.anon, sample: !!acct.demo }).catch(() => {});
+    }
+    this.clearSession();
+    return change;
+  },
 };
