@@ -21,7 +21,7 @@ const WANDER_MS = [24000, 36000];
 const SLEEP_AFTER_MS = 45000;
 const NEAR_PX = 110;
 
-const TEXTY = ".tabbar,h1,h2,h3,p,li,label,a,button,input,textarea,select,.initial,.kicker,.byline__who,.thinker__text,[data-no-pet]";
+const TEXTY = ".tabbar,.bar,.tiles,.pick,select,table,.move,.course-row,h1,h2,h3,p,li,label,a,button,input,textarea,select,.initial,.kicker,.byline__who,.thinker__text,[data-no-pet]";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const rand = (a, b) => a + Math.random() * (b - a);
 
