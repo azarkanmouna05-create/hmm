@@ -3,6 +3,7 @@
 import { derive, LEVELS, TONES, langShort, clampLevel } from "../engine/engine.js";
 import { store } from "../store.js";
 import { setChameleonMood } from "../chameleon/chameleon.js";
+import { icons } from "../ui/icons.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const STUCK = [
@@ -45,7 +46,7 @@ export function render({ path }) {
 
   const html = `
   <header class="topbar">
-    ${step > 1 ? `<a class="icon-btn" href="#/snapshot/${step - 1}" aria-label="Back">‹</a>` : ""}
+    ${step > 1 ? `<a class="snap-back" href="#/snapshot/${step - 1}" aria-label="Back">${icons.back}</a>` : ""}
     <span class="snap-progress" aria-label="Step ${step} of 4">${[1, 2, 3, 4].map((i) => `<i class="${i <= step ? "on" : ""}"></i>`).join("")}</span>
     <span class="sample-label">${step}/4</span>
   </header>

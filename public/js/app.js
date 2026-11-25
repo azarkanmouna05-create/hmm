@@ -78,6 +78,11 @@ async function render() {
 setChameleonMood((store.profile.challenge || "Gentle").toLowerCase());
 
 addEventListener("hashchange", render);
+// Tapping a link to the screen you're already on scrolls back to the top (so every tap responds).
+document.addEventListener("click", (e) => {
+  const a = e.target.closest?.("a[href^='#/']");
+  if (a && a.getAttribute("href") === location.hash) { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+});
 db.initDb().then(render);
 
 if ("serviceWorker" in navigator && location.hostname !== "localhost") {
