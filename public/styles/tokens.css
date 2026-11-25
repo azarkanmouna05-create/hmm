@@ -1,0 +1,58 @@
+/* hmm. design tokens
+   Source of truth: Figma "hmm. app — UI" → frames E1 · Home (editorial), E2 · Socrates dialogue (editorial).
+   Change a value here and it changes everywhere. */
+
+@font-face { font-family: "Newsreader"; src: url("/fonts/newsreader-latin-wght-normal.woff2") format("woff2"); font-weight: 200 800; font-style: normal; font-display: swap; }
+@font-face { font-family: "Newsreader"; src: url("/fonts/newsreader-latin-wght-italic.woff2") format("woff2"); font-weight: 200 800; font-style: italic; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("/fonts/inter-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: "Pixelify Sans"; src: url("/fonts/pixelify-sans-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+
+:root {
+  /* Paper & ink */
+  --paper: #FBF8F3;
+  --ink: #1C1A17;
+  --muted: #76716A;
+  --hairline: #E8E2D8;
+  --sand: #D9CBB5;          /* avatar chip background (E1 top bar) */
+  --paper-raised: #FFFDF9;  /* inputs, sheets */
+
+  /* Characters — used sparingly */
+  --socrates: #1F7A4D;
+  --talmid: #E9B530;
+  --rival: #E8663D;
+  --why-rule: #E8663D;      /* the orange rule on "why" margin notes */
+
+  /* Type */
+  --font-serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-pixel: "Pixelify Sans", ui-monospace, monospace; /* ONLY the hmm. logo + character initials */
+
+  --t-kicker: 600 12px/1.2 var(--font-ui);          /* TODAY'S QUESTION · MATH 1101 */
+  --t-headline: 600 28px/1.12 var(--font-serif);    /* question headline */
+  --t-section: 600 19px/1.2 var(--font-serif);      /* "Your thinkers" */
+  --t-dek: 400 16px/1.4 var(--font-serif);          /* standfirst under headline */
+  --t-voice: 400 15.5px/1.4 var(--font-serif);      /* AI voice / notes */
+  --t-ui: 500 15px/1.3 var(--font-ui);
+  --t-ui-strong: 600 15px/1.3 var(--font-ui);
+  --t-small: 400 13px/1.3 var(--font-ui);
+  --t-caption: 600 11px/1.2 var(--font-ui);
+
+  /* Space & shape */
+  --gutter: 18px;
+  --gap: 15px;
+  --radius-pill: 999px;
+  --radius-sm: 10px;
+  --tap: 44px;              /* minimum touch target */
+
+  /* Motion */
+  --ease: cubic-bezier(.4, 0, .2, 1);
+  --slow: 600ms;
+
+  /* Chameleon hue (degrees). Gentle ≈ 128 (cool green) · Balanced ≈ 100 · Tough ≈ 32 (warm) */
+  --cham-h: 118;
+
+  color-scheme: light;
+}
+
+/* Lets the chameleon's hue glide instead of jumping when the profile changes. */
+@property --cham-h { syntax: "<number>"; inherits: true; initial-value: 118; }
