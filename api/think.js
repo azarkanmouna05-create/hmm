@@ -13,6 +13,23 @@ const MODELS = (process.env.AI_MODEL || "gemini-3.8-flash,gemini-3.7-flash,gemin
   .split(",").map((m) => m.trim()).filter(Boolean);
 const KEY = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || "";
 const MAX_TURNS = 40, MAX_CHARS = 2000;
+const SB_URL = process.env.SUPABASE_URL || "", SB_KEY = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "";
+
+/* Only signed-in users may spend AI quota. The user's own token is checked with Supabase Auth, and the
+   admin policy is read from the database AS that user (row-level security applies). */
+async function authAndPolicy(request) {
+  if (!SB_URL || !SB_KEY) return { ok: true, policy: DEFAULT_POLICY }; // local dev without Supabase
+  const token = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+  if (!token) return { ok: false };
+  const h = { apikey: SB_KEY, Authorization: `Bearer ${token}` };
+  const u = await fetch(`${SB_URL}/auth/v1/user`, { headers: h, signal: AbortSignal.timeout(5000) }).catch(() => null);
+  if (!u?.ok) return { ok: false };
+  const pr = await fetch(`${SB_URL}/rest/v1/policy?id=eq.1&select=*`, { headers: h, signal: AbortSignal.timeout(5000) }).catch(() => null);
+  const row = pr?.ok ? (await pr.json())[0] : null;
+  const policy = row ? { chars: row.chars, maxHints: row.max_hints, minGroup: row.min_group, retention: row.retention,
+    challengeMin: row.challenge_min, challengeMax: row.challenge_max, langs: row.langs } : DEFAULT_POLICY;
+  return { ok: true, policy };
+}
 
 const bad = (status, error) => Response.json({ error }, { status });
 const pick = (v, list, dflt) => (list.includes(v) ? v : dflt);
@@ -22,8 +39,9 @@ export async function POST(request) {
   try { body = await request.json(); } catch { return bad(400, "Bad JSON"); }
   const { char, task = {}, profile = {}, state = {}, messages = [] } = body || {};
 
-  // TODO step 6: load policy from Supabase (admin rules). Until then, the defaults.
-  const policy = DEFAULT_POLICY;
+  const auth = await authAndPolicy(request);
+  if (!auth.ok) return bad(401, "Please sign in again.");
+  const policy = auth.policy;
 
   // ---- enforce rules server-side ----
   if (!CH[char]) return bad(400, "Unknown character");

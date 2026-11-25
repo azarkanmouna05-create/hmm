@@ -3,6 +3,7 @@
 import { CH, PACES, LEVELS, TONES, langShort } from "../engine/engine.js";
 import { store } from "../store.js";
 import { icons } from "../ui/icons.js";
+import * as db from "../db.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -114,7 +115,9 @@ export function render({ path }) {
           messages: s.msgs.filter((m) => m !== pending && !m.err).map((m) => ({ role: m.role, content: m.content })),
         };
         try {
-          const r = await fetch("/api/think", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+          const token = await db.accessToken();
+          const r = await fetch("/api/think", { method: "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify(payload) });
+          if (r.status === 401) { location.hash = "#/login"; return; }
           const data = await r.json().catch(() => ({}));
           if (!r.ok) throw new Error(data.error || "AI unavailable");
           delete pending.pending; pending.content = data.text;

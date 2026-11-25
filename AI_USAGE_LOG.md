@@ -36,3 +36,19 @@ Entries are factual. The reasoning column is mine to review and rewrite in my ow
 - **Defect 1:** 4 of 8 replies had no META line, so the "why" note was blank. The "why" is the core of hmm., so the server now writes a rule-based note from what the engine instructed whenever the model omits it. It is flagged `fallback: true` so it's transparent.
 - **Defect 2:** "worked example" was interpreted as "ask a similar question". Changed one prompt sentence to require *showing* the steps and result of the similar problem, never the student's own.
 - **Limitation to report:** free-tier capacity. Several students at once may hit quota/overload; the app then shows "hmm. can't think right now, your session is saved".
+
+| # | Date | Tool | Task / prompt (summary) | Output | Accepted / rejected / changed | Why |
+|---|------|------|-------------------------|--------|-------------------------------|-----|
+| 6 | 2026-11-25 | Claude Code | Supabase: schema with row-level security + privacy floor; auth; S01 Login; role routing; /api/think requires sign-in | `supabase/schema.sql`, `public/js/db.js`, `api/config.js`, login screen | Accepted | See notes |
+
+### Notes for entry 6
+- **Privacy is enforced by the database, not the app.** Owner-only tables hold profiles, chats and reflections. The anonymised aggregate table can't be read directly; professors use `class_insights()`, which returns nothing but `{hidden:true}` below the admin's minimum group size.
+- **Tested before deploying,** on a local Postgres with Supabase's auth functions mocked. Results:
+  - roles come from the email
+  - a professor sees 0 private chats
+  - a student can't spoof another anon id (RLS error)
+  - a student can't call `class_insights` or change policy
+  - 4 students → hidden, 5 → patterns
+  - an admin can change max hints
+- **Security choice (from the course's audit idea):** the AI endpoint now requires a signed-in user, so strangers can't burn the AI quota.
+- **Role from email** is a *demo* rule copied from my prototype. A real deployment would take roles from the university's directory (SSO). Worth noting in the ethics/limitations section.

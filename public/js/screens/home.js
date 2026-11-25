@@ -1,6 +1,8 @@
 /* S03 · Student Home — built from Figma frame "E1 · Home (editorial)".
    Content is static for step 1; step 2 wires it to the real profile + assignments. */
 import { icons } from "../ui/icons.js";
+import * as db from "../db.js";
+import { store } from "../store.js";
 
 export function render() {
   const html = `
@@ -8,7 +10,7 @@ export function render() {
     <a class="logo" href="#/" aria-label="hmm. home">hmm<span class="logo__dot"></span></a>
     <span class="topbar__spacer"></span>
     <button class="icon-btn" aria-label="Search">${icons.search}</button>
-    <button class="avatar" aria-label="Your thinking profile">M</button>
+    <button class="avatar" id="me" aria-label="Your account">${(store.profile.name || "?")[0]}</button>
   </header>
 
   <nav class="tabs" aria-label="Feed">
@@ -64,6 +66,11 @@ export function render() {
   return {
     html,
     mount(el) {
+      // Until the Thinking Profile (S06) exists, the avatar offers sign-out.
+      el.querySelector("#me").onclick = async () => {
+        if (!confirm("Sign out of hmm.?")) return;
+        await db.signOut(); location.hash = "#/login";
+      };
       // "hmm. noticed" Yes/No — acknowledged quietly (stored in profile from step 3)
       el.querySelectorAll(".note__actions .btn").forEach((b) =>
         b.addEventListener("click", () => {
