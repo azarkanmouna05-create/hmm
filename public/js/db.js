@@ -128,6 +128,24 @@ export async function addAggregate(row) {
   if (!client) return;
   await client.from("session_aggregates").insert(row);
 }
+export function cachedCourses() { return cache.get("courses", []); }
+export async function myCourses() {
+  if (!client) return cachedCourses();
+  const { data, error } = await client.rpc("my_courses");
+  if (error) return cachedCourses();          // migration 003 not run yet
+  cache.set("courses", data || []);
+  return data || [];
+}
+export async function joinCourse(code) {
+  const { data, error } = await client.rpc("join_course", { p_code: code });
+  if (error) {
+    if (/no course/i.test(error.message)) throw new Error("No course has that code. Check it with your professor.");
+    if (/only students/i.test(error.message)) throw new Error("Only student accounts join courses.");
+    throw new Error("Couldn’t join right now. Try again in a moment.");
+  }
+  await myCourses();
+  return data;
+}
 export async function getTasks() {
   if (!client) return cache.get("tasks", []);
   const { data } = await client.from("tasks").select("*").eq("status", "published").order("due");

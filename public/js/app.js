@@ -10,6 +10,7 @@ import * as login from "./screens/login.js";
 import * as playground from "./screens/chameleon-playground.js";
 import * as session from "./screens/session.js";
 import * as staffSoon from "./screens/staff-soon.js";
+import * as courses from "./screens/courses.js";
 
 const app = document.getElementById("app");
 let pet = null;
@@ -29,6 +30,7 @@ async function pick(path) {
   store.role = role;
   if (role !== "student") return staffSoon;            // S07–S11 arrive in steps 5–6
   if (path.startsWith("/session/")) return session;
+  if (path.startsWith("/course")) return courses;
   return home;
 }
 

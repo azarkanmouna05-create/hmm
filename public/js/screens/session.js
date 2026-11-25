@@ -20,7 +20,7 @@ export function render({ path }) {
   const html = `
   <div class="session" style="--char:${c.color}">
     <header class="session__head">
-      <a class="icon-btn" href="#/" aria-label="Back to home">${icons.back}</a>
+      <a class="icon-btn" href="${s.task.course ? "#/course/" + encodeURIComponent(s.task.course) : "#/"}" aria-label="Back">${icons.back}</a>
       <span class="initial initial--sm initial--${s.char}" style="width:32px;height:32px;font-size:16px" aria-hidden="true">${c.initial}</span>
       <span class="session__title"><b>${c.name}</b><span>A dialogue on ${esc(s.task.title || s.task.topic)}</span></span>
       <button class="btn btn--sm btn--ghost" id="end">End</button>

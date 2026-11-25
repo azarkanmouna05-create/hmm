@@ -1,90 +1,108 @@
 /* S03 · Student Home — built from Figma frame "E1 · Home (editorial)".
-   Content is static for step 1; step 2 wires it to the real profile + assignments. */
+   "Today's question" comes from the courses the student joined; empty state if none yet. */
 import { icons } from "../ui/icons.js";
 import * as db from "../db.js";
 import { store } from "../store.js";
+import { CH, KIND } from "../engine/engine.js";
+import { tabbar } from "./courses.js";
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const HEADLINES = { // editorial headline for known sample tasks; otherwise the task itself is the headline
+  "00000000-0000-4000-8000-000000000101": "Why does the product rule add two terms instead of one?",
+};
+const dueLabel = (d) => { if (!d) return ""; const t = new Date(d + "T12:00"); return isNaN(t) ? d : "Due " + t.toLocaleDateString("en-GB", { weekday: "short" }); };
 
 export function render() {
+  const P = store.profile;
+  const courses = store.courses;
+  const enrolled = new Set(courses.map((c) => c.code));
+  const task = store.tasks.find((t) => !db.isConfigured() || enrolled.has(t.course));
+  const k = task ? KIND[task.kind] || "socrates" : "socrates";
+  const paceLine = { "Small steps": "in small steps", "Medium steps": "at a steady pace", "Big steps": "in bigger leaps" }[P.hintPace] || "at your pace";
+
+  const today = task ? `
+    <article class="today">
+      <p class="kicker">Today's question · ${esc(task.course)}${task.sample ? ' <span class="sample-label" style="color:var(--muted);margin-left:6px">Sample</span>' : ""}</p>
+      <h1 class="headline" style="margin-top:10px">${esc(HEADLINES[task.id] || task.topic)}</h1>
+      <p class="dek" style="margin-top:10px">${P.lastChange ? esc(P.lastChange) + " " : ""}${CH[k].name} will go ${paceLine} today. You'll get there yourself.</p>
+      <div class="byline" style="margin-top:10px">
+        <span class="initial initial--sm initial--${k}" aria-hidden="true">${CH[k].initial}</span>
+        <span class="byline__who"><b>${CH[k].name}</b><span>${[dueLabel(task.due), "~12 min"].filter(Boolean).join(" · ")}</span></span>
+        <span class="byline__spacer"></span>
+        <button class="btn btn--ink" id="start">Start thinking</button>
+      </div>
+    </article>`
+    : courses.length ? `
+    <article class="today"><p class="kicker">Nothing due</p>
+      <h1 class="headline" style="margin-top:10px">No assignments right now. Bring your own question.</h1>
+      <p class="dek" style="margin-top:10px">Open one of your courses and start with Socrates, Talmid or the Rival on anything you’re working on.</p>
+      <div class="byline" style="margin-top:10px"><span class="byline__spacer"></span><a class="btn btn--ink" href="#/courses">My courses</a></div></article>`
+    : `
+    <article class="today"><p class="kicker">Welcome to hmm.</p>
+      <h1 class="headline" style="margin-top:10px">Join your first course to begin.</h1>
+      <p class="dek" style="margin-top:10px">Your professor shares a short code in class. Once you join, your course’s questions show up here.</p>
+      <div class="byline" style="margin-top:10px"><span class="byline__spacer"></span><a class="btn btn--ink" href="#/courses">Join a course</a></div></article>`;
+
+  const noticed = P.noticed && P.noticed.confirmed == null ? P.noticed.text
+    : "You do better when you see a worked example first, then try your own. Want me to keep doing that?";
+
   const html = `
   <header class="topbar">
     <a class="logo" href="#/" aria-label="hmm. home">hmm<span class="logo__dot"></span></a>
     <span class="topbar__spacer"></span>
-    <button class="icon-btn" aria-label="Search">${icons.search}</button>
-    <button class="avatar" id="me" aria-label="Your account">${(store.profile.name || "?")[0]}</button>
+    <button class="avatar" id="me" aria-label="Your account">${esc((P.name || "?")[0])}</button>
   </header>
 
   <nav class="tabs" aria-label="Feed">
     <a href="#/" aria-current="page">For you</a>
     <a href="#/courses">My courses</a>
-    <a href="#/saved">Saved</a>
   </nav>
 
   <section class="feed">
-    <article class="today">
-      <p class="kicker">Today's question · MATH 1101 <span class="sample-label" style="color:var(--muted);margin-left:6px">Sample</span></p>
-      <h1 class="headline" style="margin-top:10px">Why does the product rule add two terms instead of one?</h1>
-      <p class="dek" style="margin-top:10px">You froze on step 3 last time, so Socrates will go in small steps today. You'll get there yourself.</p>
-      <div class="byline" style="margin-top:10px">
-        <span class="initial initial--sm initial--socrates" aria-hidden="true">?</span>
-        <span class="byline__who"><b>Socrates</b><span>Due Mon · ~12 min</span></span>
-        <span class="byline__spacer"></span>
-        <a class="btn btn--ink" href="#/session/socrates">Start thinking</a>
-      </div>
-    </article>
-
+    ${today}
     <hr class="rule">
-
     <aside class="note" aria-label="Something hmm. noticed">
       <span class="note__cham" data-chameleon="40"></span>
       <div class="note__body">
-        <div class="note__meta"><b>hmm.</b>noticed something · 2h</div>
-        <p class="note__text">You do better when you see a worked example first, then try your own. Want me to keep doing that?</p>
+        <div class="note__meta"><b>hmm.</b>noticed something</div>
+        <p class="note__text">${esc(noticed)}</p>
         <div class="note__actions">
           <button class="btn btn--sm btn--yes">Yes, that’s me</button>
           <button class="btn btn--sm btn--no">Not really</button>
         </div>
       </div>
     </aside>
-
     <hr class="rule">
-
     <h2 class="section-title">Your thinkers</h2>
     <ul class="thinkers">
-      ${thinker("socrates", "?", "Socrates", "Asks until you see it. Never tells.")}
-      ${thinker("talmid", "T", "Talmid", "A confused classmate. You explain, he learns.")}
-      ${thinker("rival", "vs", "The Rival", "Disagrees with you on purpose.")}
+      ${Object.entries(CH).map(([key, c]) => `<li class="thinker">
+        <span class="initial initial--${key}" aria-hidden="true">${c.initial}</span>
+        <span class="thinker__text"><b>${c.name}</b><span>${c.line}</span></span>
+        <a class="btn btn--sm btn--ghost" href="#/courses">Open</a></li>`).join("")}
     </ul>
   </section>
-
-  <nav class="tabbar" aria-label="Main">
-    <a href="#/" aria-current="page">${icons.home}Home</a>
-    <a href="#/reflect">${icons.reflect}Reflect</a>
-    <a href="#/courses">${icons.courses}Courses</a>
-    <a href="#/me">${icons.me}Me</a>
-  </nav>`;
+  ${tabbar("home")}`;
 
   return {
     html,
     mount(el) {
+      el.querySelector("#start")?.addEventListener("click", () => {
+        store.startSession(k, task);
+        location.hash = "#/session/" + k;
+      });
       // Until the Thinking Profile (S06) exists, the avatar offers sign-out.
       el.querySelector("#me").onclick = async () => {
         if (!confirm("Sign out of hmm.?")) return;
         await db.signOut(); location.hash = "#/login";
       };
-      // "hmm. noticed" Yes/No — acknowledged quietly (stored in profile from step 3)
       el.querySelectorAll(".note__actions .btn").forEach((b) =>
-        b.addEventListener("click", () => {
+        b.addEventListener("click", async () => {
+          const yes = b.classList.contains("btn--yes");
+          const p = { ...store.profile, noticed: { text: noticed, confirmed: yes } };
+          await store.saveProfile(p);
           el.querySelector(".note__actions").outerHTML =
-            `<p class="note__meta" style="margin:0">${b.classList.contains("btn--yes") ? "Noted. I’ll keep doing that." : "Thanks, I’ll stop assuming that."}</p>`;
+            `<p class="note__meta" style="margin:0">${yes ? "Noted. I’ll keep doing that." : "Thanks, I’ll stop assuming that."}</p>`;
         }));
     },
   };
-}
-
-function thinker(key, initial, name, line) {
-  return `<li class="thinker">
-    <span class="initial initial--${key}" aria-hidden="true">${initial}</span>
-    <span class="thinker__text"><b>${name}</b><span>${line}</span></span>
-    <a class="btn btn--sm btn--ghost" href="#/session/${key}">Open</a>
-  </li>`;
 }

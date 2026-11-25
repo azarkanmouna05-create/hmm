@@ -26,6 +26,7 @@ export const store = {
   role: "student",
   policy: DEFAULT_POLICY,
   tasks: [SAMPLE_TASK],
+  get courses() { return db.cachedCourses(); },
   _profile: null,
 
   get profile() { return this._profile || db.cachedProfile() || STARTER_PROFILE; },
@@ -35,11 +36,11 @@ export const store = {
   async sync() {
     const [policy, tasks, profile] = await Promise.all([
       db.getPolicy().catch(() => DEFAULT_POLICY),
-      db.getTasks().catch(() => []),
+      db.myCourses().catch(() => []).then(() => db.getTasks()).catch(() => []),
       this.role === "student" ? db.loadProfile().catch(() => null) : null,
     ]);
     this.policy = policy;
-    if (tasks.length) this.tasks = tasks.map((t) => ({ ...t, title: t.id === SAMPLE_TASK.id ? SAMPLE_TASK.title : t.topic }));
+    if (db.isConfigured()) this.tasks = tasks.map((t) => ({ ...t, title: t.id === SAMPLE_TASK.id ? SAMPLE_TASK.title : t.topic }));
     if (this.role === "student") {
       if (profile) this._profile = profile;
       else if (await db.currentUser()) await this.saveProfile({ ...STARTER_PROFILE }); // first sign-in
@@ -65,5 +66,10 @@ export const store = {
     return s;
   },
   taskFor(char) { return this.tasks.find((t) => KIND[t.kind] === char) || null; },
+  // A free session the student starts inside one of their courses, on their own topic.
+  startFree(char, course, topic) {
+    const kind = Object.keys(KIND).find((k) => KIND[k] === char);
+    return this.startSession(char, { id: null, course, kind, topic, title: topic.length > 48 ? topic.slice(0, 46) + "…" : topic });
+  },
   charInfo: CH,
 };
