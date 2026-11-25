@@ -9,7 +9,7 @@ import { CH, DEFAULT_POLICY, PACES, TONES, LEVELS, allowedChars, clampLevel, bui
 const BASE = process.env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai";
 // One model or a comma-separated fallback chain. On the free tier each model has its own quota,
 // so when one is busy (503), out of quota (429) or retired (404), the next one answers.
-const MODELS = (process.env.AI_MODEL || "gemini-3.8-flash,gemini-3.7-flash,gemini-3.5-flash-lite,gemini-flash-lite-latest")
+const MODELS = (process.env.AI_MODEL || "gemini-3.8-flash,gemini-3.7-flash,gemini-3.5-flash-lite,gemini-flash-lite-latest,gemma-4-31b-it")
   .split(",").map((m) => m.trim()).filter(Boolean);
 const KEY = process.env.AI_API_KEY || process.env.GEMINI_API_KEY || "";
 const MAX_TURNS = 40, MAX_CHARS = 2000;
