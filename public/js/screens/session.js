@@ -127,7 +127,10 @@ export function render({ path }) {
         };
         try {
           const token = await db.accessToken();
-          const r = await fetch("/api/think", { method: "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify(payload) });
+          const send = () => fetch("/api/think", { method: "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify(payload) });
+          let r = await send().catch(() => null);
+          // The free AI tier is sometimes briefly overloaded: wait a moment and try once more before showing an error.
+          if (!r || r.status >= 500) { await new Promise((res) => setTimeout(res, 4000)); r = await send(); }
           if (r.status === 401) { location.hash = "#/login"; return; }
           const data = await r.json().catch(() => ({}));
           if (!r.ok) throw new Error(data.error || "AI unavailable");
