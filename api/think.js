@@ -54,16 +54,23 @@ export async function POST(request) {
   if (!KEY) return bad(503, "AI is not configured (missing AI_API_KEY).");
 
   try {
-    const r = await fetch(`${BASE}/chat/completions`, {
+    const call = () => fetch(`${BASE}/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${KEY}` },
       body: JSON.stringify({
         model: MODEL, messages: convo, temperature: 0.6, max_tokens: 600,
-        // Gemini 2.5 "thinks" before answering by default; short Socratic turns don't need it and it eats the token budget.
+        // Gemini "thinks" before answering by default; short Socratic turns don't need it and it eats the token budget.
         ...(BASE.includes("generativelanguage") ? { reasoning_effort: "none" } : {}),
       }),
-      signal: AbortSignal.timeout(25000),
+      signal: AbortSignal.timeout(20000),
     });
+    // Busy/rate-limited providers usually recover within seconds: retry twice with a short backoff.
+    let r = await call();
+    for (const wait of [1200, 3000]) {
+      if (r.status !== 503 && r.status !== 429) break;
+      await new Promise((res) => setTimeout(res, wait));
+      r = await call();
+    }
     if (!r.ok) {
       // Pass the provider's own message through (it never contains the key) so setup problems are diagnosable.
       const detail = (await r.text().catch(() => "")).slice(0, 400);
