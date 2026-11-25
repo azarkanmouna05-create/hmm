@@ -3,6 +3,7 @@
    #/reflect     → your past reflections (only you can see these) */
 import { CH } from "../engine/engine.js";
 import { store } from "../store.js";
+import { locale } from "../i18n/index.js";
 import { tabbar } from "./courses.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -67,7 +68,7 @@ function history() {
     <h1 class="headline">Your reflections</h1>
     <p class="dek">Only you can see these. Professors see class patterns, never your words.</p>
     ${H.length ? `<ul class="reflections">${H.map((h) => `
-      <li><p class="note__meta"><b>${esc(CH[h.char]?.name || "")}</b>${esc(h.course || "Free session")} · ${new Date(h.ts).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} · confidence ${h.conf ?? "–"}/5</p>
+      <li><p class="note__meta"><b>${esc(CH[h.char]?.name || "")}</b>${esc(h.course || "Free session")} · ${new Date(h.ts).toLocaleDateString(locale(), { day: "numeric", month: "short" })} · confidence ${h.conf ?? "–"}/5</p>
         <p class="reflections__topic">${esc(h.topic)}</p>
         ${h.stuck ? `<p class="reflections__line"><span>Stuck:</span> ${esc(h.stuck)}</p>` : ""}
         ${h.unlocked ? `<p class="reflections__line"><span>Unlocked by:</span> ${esc(h.unlocked)}</p>` : ""}</li>`).join("")}</ul>`

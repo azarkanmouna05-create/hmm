@@ -3,11 +3,12 @@
    #/course/<code>  → one course: the professor's tasks, and "think about anything" with each allowed character */
 import { CH, allowedChars } from "../engine/engine.js";
 import { store } from "../store.js";
+import { locale } from "../i18n/index.js";
 import * as db from "../db.js";
 import { icons } from "../ui/icons.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const fmtDue = (d) => { const t = new Date(d + "T12:00"); return isNaN(t) ? d : t.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }); };
+const fmtDue = (d) => { const t = new Date(d + "T12:00"); return isNaN(t) ? d : t.toLocaleDateString(locale(), { weekday: "short", day: "numeric", month: "short" }); };
 const PROMPT = {
   socrates: { label: "Your problem", ph: "e.g. Find the derivative of x³ · eˣ", go: "Start with Socrates" },
   talmid: { label: "What will you teach Talmid?", ph: "e.g. Why demand curves slope down", go: "Teach Talmid" },

@@ -1,6 +1,7 @@
 /* S01 · Login (+ edge states: wrong password, forgot password, create account).
    Copy reused from the earlier Figma Login frame; layout in the editorial style of E1/E2. */
 import * as db from "../db.js";
+import { langPicker, bindLangPicker, ask } from "../i18n/index.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -10,7 +11,7 @@ export function render({ path }) {
   const button = { signin: "Sign in", signup: "Create account", forgot: "Send reset link" }[mode];
 
   const html = `
-  <header class="topbar"><span class="logo">hmm<span class="logo__dot"></span></span></header>
+  <header class="topbar"><span class="logo">hmm<span class="logo__dot"></span></span><span class="topbar__spacer"></span>${langPicker()}</header>
   <section class="auth">
     <h1 class="headline">${title}</h1>
     <div class="auth__quote">
@@ -55,6 +56,7 @@ export function render({ path }) {
     pet: false,
     mount(el) {
       const $ = (q) => el.querySelector(q);
+      bindLangPicker(el);
       const msg = (t, ok = false) => { $("#msg").textContent = t; $("#msg").classList.toggle("is-ok", ok); };
       $("#show")?.addEventListener("click", () => {
         const pw = $("#pw"); const show = pw.type === "password";
@@ -67,7 +69,7 @@ export function render({ path }) {
         catch (err) { msg(err.message); el.querySelectorAll("[data-demo]").forEach((x) => (x.disabled = false)); }
       }));
       $("#restart")?.addEventListener("click", async () => {
-        if (!confirm("Start the demo over? Mouna goes back to the Learning Snapshot, rules go back to default, sample data is refreshed. Real students are not affected.")) return;
+        if (!ask("Start the demo over? Mouna goes back to the Learning Snapshot, rules go back to default, sample data is refreshed. Real students are not affected.")) return;
         $("#restart").disabled = true; msg("Restarting the demo…", true);
         try {
           const r = await fetch("/api/demo-reset", { method: "POST" });

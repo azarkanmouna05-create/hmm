@@ -4,6 +4,7 @@
 import { Pet } from "./chameleon/pet.js";
 import { mountInlineChameleons, setChameleonMood } from "./chameleon/chameleon.js";
 import * as db from "./db.js";
+import { startI18n } from "./i18n/index.js";
 import { store } from "./store.js";
 import * as home from "./screens/home.js";
 import * as login from "./screens/login.js";
@@ -77,6 +78,7 @@ async function render() {
 // The chameleon's hue follows the learner profile from the very first paint (cached), then the live one.
 setChameleonMood((store.profile.challenge || "Gentle").toLowerCase());
 
+startI18n(document.getElementById("app"));
 addEventListener("hashchange", render);
 // Tapping a link to the screen you're already on scrolls back to the top (so every tap responds).
 document.addEventListener("click", (e) => {

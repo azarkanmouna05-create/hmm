@@ -297,3 +297,13 @@ form.snap, #ins, #dash, #moves, .feed > form, .auth__form { display: flex; flex-
 .link-btn { align-self: flex-start; background: none; border: 0; padding: 8px 0; font: 500 13px/1.35 var(--font-ui); color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
 #app, .screen { overflow-x: clip; }
 .auth__demo-row .btn { flex: 1 1 calc(50% - 8px); }
+
+/* ---------- language picker & right-to-left (Arabic) ---------- */
+.lang-pick select { height: 34px; padding: 0 10px; font-size: 13px; border-radius: var(--radius-pill); }
+.why, .auth__quote { border-left: 0; border-inline-start: 2px solid var(--why-rule); padding-left: 0; padding-inline-start: 12px; }
+[dir="rtl"] .icon-btn svg, [dir="rtl"] .snap-back svg, [dir="rtl"] .composer__send svg { transform: scaleX(-1); }
+[dir="rtl"] .composer__send svg { transform: none; }
+[dir="rtl"] .free { margin: -4px 52px 4px 0; }
+[dir="rtl"] .bar b, [dir="rtl"] .rules-table td:first-child { text-align: start; }
+[dir="rtl"] body { font-family: "Inter", "Noto Sans Arabic", "Segoe UI", Tahoma, sans-serif; }
+[dir="rtl"] .turn p, [dir="rtl"] .headline, [dir="rtl"] .dek, [dir="rtl"] .note__text { font-family: var(--font-serif), "Noto Naskh Arabic", "Times New Roman", serif; }

@@ -6,6 +6,7 @@ import { CH, LEVELS } from "../engine/engine.js";
 import { store } from "../store.js";
 import * as db from "../db.js";
 import { icons } from "../ui/icons.js";
+import { ask } from "../i18n/index.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ALL_LANGS = ["English", "Français", "Darija", "العربية"];
@@ -51,11 +52,11 @@ export function dashboard() {
           <p class="auth__fine">Counts only. Admins never see names or chat text.</p>`;
       } catch (e) { el.querySelector("#dash").innerHTML = `<p class="dek">${esc(e.message)}</p>`; }
       el.querySelector("#retain").onclick = async () => {
-        if (!confirm(`Delete private chats older than the retention period (${store.policy.retention})?`)) return;
+        if (!ask(`Delete private chats older than the retention period (${store.policy.retention})?`)) return;
         try { const n = await db.applyRetention(); msg(`Done. ${n} old private session${n === 1 ? "" : "s"} deleted.`); } catch (e) { msg(e.message, false); }
       };
       el.querySelector("#reset").onclick = async () => {
-        if (!confirm("Restore default rules and fresh sample data? Real students’ data is not touched.")) return;
+        if (!ask("Restore default rules and fresh sample data? Real students’ data is not touched.")) return;
         try { await db.resetDemo(); msg("Demo reset: default rules and fresh sample data."); } catch (e) { msg(e.message, false); }
       };
     },

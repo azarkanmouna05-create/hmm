@@ -4,6 +4,7 @@ import { store } from "../store.js";
 import * as db from "../db.js";
 import { createChameleon, setChameleonMood } from "../chameleon/chameleon.js";
 import { tabbar } from "./courses.js";
+import { langPicker, bindLangPicker } from "../i18n/index.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -50,6 +51,10 @@ export function render() {
     </aside>
 
     <hr class="rule">
+    <h2 class="section-title">App language</h2>
+    <p class="dek" style="font-size:15px">The language of the whole app. (The languages above are what hmm.’s characters speak with you.)</p>
+    ${langPicker()}
+    <hr class="rule">
     <h2 class="section-title">Privacy</h2>
     <p class="dek" style="font-size:15px">Your chats and reflections are private to you. Professors see class patterns only, for groups of ${pol.minGroup}+ students, never names or chat text. Data is kept for ${esc(pol.retention)}.</p>
     <a class="btn btn--ghost" href="#/snapshot/1" style="align-self:flex-start">Retake Learning Snapshot</a>
@@ -60,6 +65,7 @@ export function render() {
   return {
     html,
     mount(el) {
+      bindLangPicker(el);
       const big = createChameleon({ size: 96, label: "Your chameleon" }); el.querySelector("#bigcham").append(big.el);
       const msg = (t) => { el.querySelector("#msg").textContent = t; };
       const save = async (patch, text) => { await store.saveProfile({ ...store.profile, ...patch, lastChange: "" }); msg(text); };

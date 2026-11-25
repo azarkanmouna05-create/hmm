@@ -7,6 +7,7 @@ import { store } from "../store.js";
 import * as db from "../db.js";
 import { icons } from "../ui/icons.js";
 import { adminTabs } from "./admin.js";
+import { langPicker, bindLangPicker, ask, askText, t, locale } from "../i18n/index.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const qs = (path) => new URLSearchParams(path.split("?")[1] || "");
@@ -41,11 +42,11 @@ function bindMoves(el, list) {
     try {
       if (m.act === "plan") { await db.addPlan(m.course, m.t); b.outerHTML = `<span class="note__meta">Added to your lesson notes.</span>`; }
       if (m.act === "invite") {
-        const when = prompt("When and where? (e.g. Thu 4pm, Building 8 room 104)"); if (!when) return;
+        const when = askText("When and where? (e.g. Thu 4pm, Building 8 room 104)"); if (!when) return;
         await db.createInvite({ course: m.course, topic: `Help session · ${m.course}`, when });
         b.outerHTML = `<span class="note__meta">Invite sent anonymously.</span>`;
       }
-    } catch (e) { alert(e.message); }
+    } catch (e) { alert(t(e.message)); }
   });
 }
 
@@ -180,8 +181,9 @@ export function account({ role }) {
   return {
     html: `${top(role)}<section class="feed"><p class="kicker">Account</p><h1 class="headline">Signed in as ${esc(role)}.</h1>
       <p class="dek">Your role comes from your university account. There is no role picker.</p>
+      <h2 class="section-title">App language</h2>${langPicker()}
       <button class="btn btn--ghost" id="out" style="align-self:flex-start">Sign out</button></section>${role === "admin" ? adminTabs("account") : staffTabs("account")}`,
     pet: false,
-    mount(el) { el.querySelector("#out").onclick = async () => { await db.signOut(); location.hash = "#/login"; }; },
+    mount(el) { bindLangPicker(el); el.querySelector("#out").onclick = async () => { await db.signOut(); location.hash = "#/login"; }; },
   };
 }

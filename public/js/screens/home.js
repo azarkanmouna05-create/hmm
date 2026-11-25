@@ -3,6 +3,7 @@
 import { icons } from "../ui/icons.js";
 import * as db from "../db.js";
 import { store } from "../store.js";
+import { locale } from "../i18n/index.js";
 import { CH, KIND } from "../engine/engine.js";
 import { tabbar } from "./courses.js";
 
@@ -10,7 +11,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const HEADLINES = { // editorial headline for known sample tasks; otherwise the task itself is the headline
   "00000000-0000-4000-8000-000000000101": "Why does the product rule add two terms instead of one?",
 };
-const dueLabel = (d) => { if (!d) return ""; const t = new Date(d + "T12:00"); return isNaN(t) ? d : "Due " + t.toLocaleDateString("en-GB", { weekday: "short" }); };
+const dueLabel = (d) => { if (!d) return ""; const t = new Date(d + "T12:00"); return isNaN(t) ? d : "Due " + t.toLocaleDateString(locale(), { weekday: "short" }); };
 
 export function render() {
   const P = store.profile;
