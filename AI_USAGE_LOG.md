@@ -25,3 +25,14 @@ Entries are factual. The reasoning column is mine to review and rewrite in my ow
 - **The prompt is now built on the server, not in the browser.** A student could otherwise edit the rules in dev tools. The server also enforces admin rules: characters turned off per course (403), hint cap, allowed languages, challenge range.
 - **Provider-agnostic.** The server calls any OpenAI-compatible endpoint; Gemini is the default. To switch provider, change three environment variables.
 - **Testing done:** rule enforcement tested directly against the API (Rival blocked in MATH 1101, hint cap, missing key → "hmm. can't think right now"). The session flow (turns, hints, "why" note, settings change, session restored after reload) was tested against a *local test stub* that returns obviously fake text. **Not yet tested against real Gemini**: that happens once the key is in Vercel.
+
+| # | Date | Tool | Task / prompt (summary) | Output | Accepted / rejected / changed | Why |
+|---|------|------|-------------------------|--------|-------------------------------|-----|
+| 5 | 2026-11-25 | Claude Code + Gemini (live) | Deploy to Vercel; first real-AI acceptance test of US2 (Socrates) on the deployed app | Transcript in `docs/tests/us2-socrates-live-2026-11-25.md` | Accepted with 2 fixes | See notes |
+
+### Notes for entry 5
+- **Setup issues found and fixed:** `gemini-2.5-flash` is retired for new keys (404). The free tier has per-model quotas (429) and was overloaded (503). Fix: a model **fallback chain** (3.8-flash → 3.7-flash → 3.5-flash-lite → flash-lite-latest → gemma-4-31b) and a `/api/models` diagnostic.
+- **US2 result (real Gemini, 8 turns):** never revealed the final answer despite 3 requests, including "exam in 1 hour". It switched to a similar problem after the 2nd request. The hint was a bigger clue. It confirmed the correct answer and asked "why does this work?". Darija mixed in naturally.
+- **Defect 1:** 4 of 8 replies had no META line, so the "why" note was blank. The "why" is the core of hmm., so the server now writes a rule-based note from what the engine instructed whenever the model omits it. It is flagged `fallback: true` so it's transparent.
+- **Defect 2:** "worked example" was interpreted as "ask a similar question". Changed one prompt sentence to require *showing* the steps and result of the similar problem, never the student's own.
+- **Limitation to report:** free-tier capacity. Several students at once may hit quota/overload; the app then shows "hmm. can't think right now, your session is saved".

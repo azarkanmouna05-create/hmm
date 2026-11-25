@@ -4,7 +4,7 @@
      (e.g. "never reveal the answer", the hint limit, which characters a course allows).
    - Model-agnostic: any OpenAI-compatible chat endpoint works. Default = Google Gemini.
      Swap provider by changing AI_BASE_URL / AI_MODEL / AI_API_KEY in Vercel; no code change. */
-import { CH, DEFAULT_POLICY, PACES, TONES, LEVELS, allowedChars, clampLevel, buildPrompt, parseReply } from "../public/js/engine/engine.js";
+import { CH, DEFAULT_POLICY, PACES, TONES, LEVELS, allowedChars, clampLevel, buildPrompt, parseReply, fallbackMeta } from "../public/js/engine/engine.js";
 
 const BASE = process.env.AI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta/openai";
 // One model or a comma-separated fallback chain. On the free tier each model has its own quota,
@@ -83,8 +83,13 @@ export async function POST(request) {
     }
     const data = await r.json();
     const raw = data.choices?.[0]?.message?.content || "";
-    const { text, meta } = parseReply(raw);
+    let { text, meta, found } = parseReply(raw);
     if (!text) return bad(502, "Empty reply");
+    if (!found || !meta.note) {
+      const lastUser = [...messages].reverse().find((m) => m.role !== "assistant")?.content || "";
+      const fb = fallbackMeta(String(lastUser), s);
+      meta = found ? { ...meta, note: fb.note, fallback: true } : fb;
+    }
     return Response.json({ text, meta, model: used, adapted: { pace: s.pace, level: s.level, tone: s.tone, maxHints } });
   } catch {
     return bad(504, "AI timed out");

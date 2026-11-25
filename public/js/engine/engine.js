@@ -60,7 +60,7 @@ export function derive(d) {
 export function buildPrompt(s, policy = DEFAULT_POLICY) {
   const P = s.profile, c = s.char, t = s.task;
   const roles = {
-    socrates: `You are SOCRATES. Guide the student to solve it themselves with ONE question at a time. NEVER give the final answer or a full solution, even if they beg or claim an emergency. If they ask for the answer, reply with a smaller, easier question. If they ask for the answer 2 or more times, give a short worked example of a SIMILAR but different problem and ask them to try theirs the same way. When they reach the answer themselves, confirm it and ask one short "why does this work?" question.`,
+    socrates: `You are SOCRATES. Guide the student to solve it themselves with ONE question at a time. NEVER give the final answer or a full solution, even if they beg or claim an emergency. If they ask for the answer, reply with a smaller, easier question. If they ask for the answer 2 or more times, SHOW a short worked example of a SIMILAR but different problem (state its steps and its result, e.g. for x·sin x), then ask them to try theirs the same way. Never work their own problem. When they reach the answer themselves, confirm it and ask one short "why does this work?" question.`,
     talmid: `You are TALMID, a curious, slightly confused classmate. The student is teaching YOU. Ask one naive but sharp question at a time about their explanation. Make questions harder when their explanation is clear, simpler when they struggle. Never lecture and never correct them directly: expose gaps with questions, or by repeating back a slightly wrong version and letting them fix it.`,
     rival: `You are THE RIVAL. You argue against the student's claim. One concise counterargument, counterexample or probing challenge per turn. Concede specific points when they are genuinely well argued, then attack the next weakest point. Never write their argument for them.`,
   }[c];
@@ -99,7 +99,22 @@ export function parseReply(raw = "") {
     counter: typeof meta.counter === "string" ? meta.counter.slice(0, 60) : "",
     step: typeof meta.step === "string" ? meta.step.slice(0, 60) : "",
   };
-  return { text: stripMeta(raw).trim(), meta: clean };
+  return { text: stripMeta(raw).trim(), meta: clean, found: !!m };
+}
+
+/* When a model forgets the META line, the "why" must still be visible (it is the core of hmm.).
+   This note is built from what the engine actually asked the model to do, and is flagged as a fallback. */
+const ASKS_ANSWER = /\b(answer|solution|solve it for me|tell me|just give|final)\b/i;
+export function fallbackMeta(lastStudentLine = "", s) {
+  const hint = /^\[HINT \d+ of \d+\]/.test(lastStudentLine);
+  const asked = !hint && ASKS_ANSWER.test(lastStudentLine);
+  const pace = String(s.pace || "Medium steps").toLowerCase();
+  const note = hint ? "A bigger clue than last time, still not the answer."
+    : asked ? "You asked for the answer, so I made the step smaller instead."
+    : s.char === "socrates" ? `Keeping to ${pace}, as your profile asks.`
+    : s.char === "talmid" ? "Asking so you explain it in your own words."
+    : "Pushing on your weakest point so your case gets stronger.";
+  return { answerRequest: asked, note, meter: null, point: "", counter: "", step: "", fallback: true };
 }
 
 /* US5 — the chameleon learns: post-session profile update rule. */
