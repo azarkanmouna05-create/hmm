@@ -40,6 +40,7 @@ export function render({ path }) {
         <button class="btn btn--sm btn--ghost" data-demo="professor"><span class="initial initial--sm initial--talmid" aria-hidden="true">S</span>Professor</button>
         <button class="btn btn--sm btn--ghost" data-demo="admin"><span class="initial initial--sm initial--rival" aria-hidden="true">A</span>Admin</button>
       </div>
+      <button type="button" class="link-btn" id="restart">↺ Start the demo over (fresh Mouna, default rules, new sample data)</button>
     </div>
     <p class="auth__links">
       ${mode === "signin" ? `<a href="#/login/forgot">Forgot password?</a> · <a href="#/login/signup">New here? Create your account</a>`
@@ -64,6 +65,18 @@ export function render({ path }) {
         try { await db.demoSignIn(b.dataset.demo); location.hash = "#/"; }
         catch (err) { msg(err.message); el.querySelectorAll("[data-demo]").forEach((x) => (x.disabled = false)); }
       }));
+      $("#restart")?.addEventListener("click", async () => {
+        if (!confirm("Start the demo over? Mouna goes back to the Learning Snapshot, rules go back to default, sample data is refreshed. Real students are not affected.")) return;
+        $("#restart").disabled = true; msg("Restarting the demo…", true);
+        try {
+          const r = await fetch("/api/demo-reset", { method: "POST" });
+          if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "Couldn’t restart the demo.");
+          await db.signOut();
+          try { Object.keys(localStorage).filter((k) => k.startsWith("hmm.")).forEach((k) => localStorage.removeItem(k)); sessionStorage.clear(); } catch {}
+          msg("Demo restarted. Tap Student to begin with the Learning Snapshot.", true);
+        } catch (err) { msg(err.message); }
+        $("#restart").disabled = false;
+      });
       $("#demo")?.addEventListener("click", () => { sessionStorage.setItem("hmm.demo", "1"); location.hash = "#/"; });
       $("#f").addEventListener("submit", async (e) => {
         e.preventDefault();

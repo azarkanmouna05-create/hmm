@@ -244,3 +244,54 @@ a { color: inherit; }
 .rules-table input { width: 20px; height: 20px; accent-color: var(--ink); }
 select { height: 46px; padding: 0 12px; border: 1px solid var(--hairline); border-radius: var(--radius-sm); background: var(--paper-raised); font: 400 15px/1 var(--font-ui); color: var(--ink); }
 .snap-back { display: grid; place-items: center; width: var(--tap); height: var(--tap); margin-left: -12px; flex: none; position: relative; z-index: 2; }
+
+/* ===================== spacing & small-phone pass ===================== */
+/* Containers that hold several blocks get real vertical rhythm (they had none → cramped). */
+form.snap, #ins, #dash, #moves, .feed > form, .auth__form { display: flex; flex-direction: column; gap: 16px; }
+.section-title { margin-top: 10px; }
+.feed > .section-title:first-child, #ins > .section-title:first-child { margin-top: 0; }
+.field { gap: 8px; }
+.field-label { margin: 6px 0 0; }
+.picks + .field-label, .picks + .field { margin-top: 6px; }
+.bar { padding: 6px 0; }
+.bar + .section-title, .tiles + .section-title, .bar + p, .tiles + p { margin-top: 18px; }
+.move { gap: 6px; padding: 16px 0; }
+.move .note__actions { margin-top: 6px; flex-wrap: wrap; }
+.note__actions { flex-wrap: wrap; }
+.tiles { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
+.tiles div { min-width: 0; }
+.tiles span { overflow-wrap: anywhere; }
+.course-row { gap: 4px 12px; padding: 16px 0; }
+.course-row__meta { line-height: 1.45; }
+.kicker { line-height: 1.5; }
+.headline { overflow-wrap: anywhere; }
+
+/* Session: give the dialogue room; the Rival board scrolls with the page area instead of squeezing it */
+.hints { flex-wrap: wrap; row-gap: 6px; padding-top: 12px; padding-bottom: 12px; }
+.rival-board { gap: 6px 16px; }
+.rival-board ul { margin-top: 6px; line-height: 1.4; }
+.rival-board li { overflow-wrap: anywhere; }
+.adapted { line-height: 1.6; }
+
+/* Small phones (≤ 380px wide, e.g. many Android phones, iPhone SE/mini) */
+@media (max-width: 380px) {
+  :root { --gutter: 16px; }
+  .headline { font-size: 25px; }
+  .dek { font-size: 15px; }
+  .tabbar { padding-left: 16px; padding-right: 16px; }
+  .tabs { gap: 18px; }
+  .byline { flex-wrap: wrap; row-gap: 10px; }
+  .byline .btn { margin-left: auto; }
+  .thinker { align-items: flex-start; }
+  .thinker .btn { margin-top: 4px; }
+  .bar { grid-template-columns: 96px 1fr 26px; }
+  .bar--wide { grid-template-columns: 1fr; gap: 4px; }
+  .bar--wide b { text-align: left; }
+  .rival-board { grid-template-columns: 1fr; }
+  .rules-table th, .rules-table td { padding: 6px 2px; font-size: 12px; }
+  .join__row { flex-wrap: wrap; }
+  .join__row input, .join__row select { flex: 1 1 140px; }
+  .profile-head__cham { width: 72px; }
+  .conf .pick { padding: 10px 0; }
+}
+.link-btn { align-self: flex-start; background: none; border: 0; padding: 8px 0; font: 500 13px/1.35 var(--font-ui); color: var(--muted); text-decoration: underline; text-underline-offset: 3px; text-align: left; }
