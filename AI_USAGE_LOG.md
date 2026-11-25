@@ -61,3 +61,20 @@ Entries are factual. The reasoning column is mine to review and rewrite in my ow
 - **My decisions (Mouna):** keep a one-tap demo with a fixed demo password ("it's just a demo"), but make the real app safe outside the demo; students join courses with a **join code** from the professor; classmates take part in the demo **as themselves**.
 - **Live checks on the real Supabase project:** demo roles/courses correct; a Gmail sign-up is refused; demo student joined → MATH 1101 course page → own question with Socrates → real Gemini reply in EN + Darija, refused to give the answer, "why" note shown; the chat was saved privately (4 messages), and the professor account got `[]` when trying to read private sessions.
 - **Repeatable DB tests:** `supabase/tests/run.sh` rebuilds a local Postgres, applies all scripts in order, and prints expected vs actual for every privacy rule.
+
+| # | Date | Tool | Task / prompt (summary) | Output | Accepted / rejected / changed | Why |
+|---|------|------|-------------------------|--------|-------------------------------|-----|
+| 8 | 2026-11-25 | Claude Code | "Get everything done": Snapshot, Reflection, Profile, Talmid/Rival, professor S07–S09, admin S10–S11, sample data, reset demo. Then fix what Mouna found on the live app | Code + migration 004 + live tests | Accepted; several bugs found and fixed | See notes |
+
+### Notes for entry 8
+- **Bugs Mouna found by clicking the live app,** and their causes:
+  1. A cache-first service worker kept serving an old mix of files, so the old chat code without login was refused ("can't think") and buttons were dead. Fixed with a network-first service worker that auto-reloads on update.
+  2. The invisible chameleon caught taps in the top-left corner, over back buttons and the logo. Fixed: a hidden pet can't receive taps and parks off-screen.
+  3. Reflection could hang while the AI tried 5 models for up to 15 s each. Fixed with time budgets and a rule-based fallback.
+- **Lesson for the report:** unit/DB tests passed, but only a real click-through on the deployed app found these. The process now includes an automated "click every button on every screen, every role" check (`crawl.js`, 92 clicks), plus a real-Gemini tour.
+- **Live results (real Gemini):**
+  - Talmid asked naive-but-sharp questions.
+  - The Rival argued with real counterexamples (nuclear/certified systems), and the points/counters board filled in.
+  - The reflection saved in ~3 s, and the profile rule fired ("You felt 5/5 with 0 hints, so hmm. now takes medium steps").
+  - The professor saw sample-class insights with teaching moves.
+  - The admin dashboard and rules loaded.
