@@ -67,18 +67,24 @@ function friendly(e) {
   if (/invalid login credentials/i.test(m)) return new Error("That email and password don't match. Try again, or reset your password.");
   if (/already registered/i.test(m)) return new Error("You already have an account. Sign in instead.");
   if (/password/i.test(m) && /6/.test(m)) return new Error("Use at least 6 characters for your password.");
+  if (/university email|database error saving new user/i.test(m)) return new Error("Please use your university email (for example name@aui.ma).");
   if (/rate limit/i.test(m)) return new Error("Too many tries. Wait a minute and try again.");
   return new Error(m);
 }
 
 /* ---------- role, policy ---------- */
-export async function myRole() {
-  const cached = cache.get("role", null);
-  if (!client) return cached || "student";
-  const { data } = await client.from("user_roles").select("role").maybeSingle();
-  const role = data?.role || cached || "student";
-  cache.set("role", role);
-  return role;
+export async function myRole() { return (await myAccount()).role; }
+export async function myAccount() {
+  const cached = cache.get("account", null);
+  if (!client) return cached || { role: "student", demo: true };
+  let { data, error } = await client.rpc("my_account");
+  if (error) { // migration 002 not run yet: fall back to the role table
+    const r = await client.from("user_roles").select("role").maybeSingle();
+    data = r.data ? { role: r.data.role, demo: false } : null;
+  }
+  const acct = data || cached || { role: "student", demo: false };
+  cache.set("account", acct);
+  return acct;
 }
 export async function getPolicy() {
   if (!client) return DEFAULT_POLICY;
