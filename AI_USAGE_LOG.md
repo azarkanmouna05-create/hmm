@@ -85,4 +85,4 @@ Entries are factual. The reasoning column is mine to review and rewrite in my ow
 
 | # | Date | Tool | Task / prompt (summary) | Output | Accepted / rejected / changed | Why |
 |---|------|------|-------------------------|--------|-------------------------------|-----|
-| 10 | 2026-11-26 | Claude Code | Login logo | First a generated pixel thought-cloud | Rejected by me: we already have a logo in Figma | Login now uses our Figma wordmark (hmm. in Pixelify Sans + green dot) with "from hmm. to aha" |
+| 10 | 2026-11-26 | Claude Code | Login logo | Claude Code first drew a new pixel cloud, then swapped in the plain Figma wordmark | Both rejected by me: we already made the logo with Claude the day before | Login now uses that exact logo, copied from the "hmm. opening animation" artifact: pixel thought cloud, pixel letters, dot with the chameleon inside |
