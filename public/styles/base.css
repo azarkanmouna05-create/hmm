@@ -470,3 +470,4 @@ form.snap, #ins, #dash, #moves, .feed > form, .auth__form { display: flex; flex-
 .radio i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--muted); flex: none; }
 .radio.is-on { box-shadow: inset 0 0 0 1px var(--ink); font-weight: 600; }
 .radio.is-on i { border-color: var(--socrates); box-shadow: inset 0 0 0 4px var(--paper-raised); background: var(--socrates); }
+.agree { display: flex; flex-direction: column; gap: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--hairline); }

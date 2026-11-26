@@ -39,24 +39,17 @@ export function pickCharacter(task) {
   });
 }
 
-/* "Start a session" from Home: pick a course, write your own problem/concept/claim. */
+/* "Start a session" from Home (Flows 2 and 4): choose the character on S03; the problem/claim is typed in the
+   session screen itself (S04a/S04c). Only asks which course first if the student has more than one. */
 export function freeStart(k) {
   const courses = store.courses.filter((c) => allowedChars(store.policy, c.code).includes(k));
   if (!store.courses.length) { location.hash = "#/courses"; return; }
-  const sheet = openSheet(CH[k].name, `
-    <form class="snap" id="fs">
-      <label class="field">${PROMPT[k].label}<textarea id="ft" rows="3" placeholder="${PROMPT[k].ph}"></textarea></label>
-      <label class="field">Course<select id="fc">${courses.map((c) => `<option value="${esc(c.code)}">${esc(c.code)} · ${esc(c.name)}</option>`).join("")}</select></label>
-      ${courses.length < store.courses.length ? `<p class="note__meta">${CH[k].name} is turned off in some of your courses by your university.</p>` : ""}
-      <p class="auth__msg" id="fe" role="alert"></p>
-      <button class="btn btn--ink auth__submit">Start</button>
-    </form>`);
-  if (!courses.length) { sheet.el.querySelector("#fs").innerHTML = `<p class="dek">${CH[k].name} is turned off in all your courses by your university.</p>`; return; }
-  sheet.el.querySelector("#fs").onsubmit = (e) => {
-    e.preventDefault();
-    const topic = sheet.el.querySelector("#ft").value.trim();
-    if (!topic) { sheet.el.querySelector("#fe").textContent = "Write the question or topic first."; return; }
-    store.startFree(k, sheet.el.querySelector("#fc").value, topic);
-    location.hash = "#/session/" + k;
-  };
+  const go = (course) => { store.startFree(k, course, ""); location.hash = "#/session/" + k; };
+  if (courses.length === 1) return go(courses[0].code);
+  const sheet = openSheet(CH[k].name, courses.length ? `
+    <p class="note__meta">Which course is this for?</p>
+    <div class="cards">${courses.map((c) => `<button class="card-row" data-c="${esc(c.code)}"><span class="card-row__text"><b data-no-i18n>${esc(c.code)}</b><span data-no-i18n>${esc(c.name)}</span></span><span class="card-row__end">›</span></button>`).join("")}</div>
+    ${courses.length < store.courses.length ? `<p class="note__meta">${CH[k].name} is turned off in some of your courses by your university.</p>` : ""}`
+    : `<p class="dek">${CH[k].name} is turned off in all your courses by your university.</p>`);
+  sheet.el.querySelectorAll("[data-c]").forEach((b) => b.onclick = () => go(b.dataset.c));
 }

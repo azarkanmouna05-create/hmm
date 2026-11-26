@@ -57,7 +57,8 @@ function reflectNow() {
         const change = await store.finishSession({ conf: skipped ? 3 : conf, skipped,
           stuck: el.querySelector("#stuck").value.trim(), unlocked: el.querySelector("#unlocked").value.trim() });
         sessionStorage.setItem("hmm.toast", change || "Saved. Your Thinking Profile is updated.");
-        location.hash = "#/";
+        sessionStorage.setItem("hmm.afterReflect", String(Date.now()));
+        location.hash = "#/me";
       };
       el.querySelector("#save").onclick = () => done(false);
       el.querySelector("#skip").onclick = () => done(true);

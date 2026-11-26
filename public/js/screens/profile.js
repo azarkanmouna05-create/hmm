@@ -21,9 +21,13 @@ export function render() {
   const noticed = P.noticed && P.noticed.confirmed !== false ? P.noticed : null;
   const row = (label, value, id) => `<div class="setrow"><span>${label}</span><button type="button" class="setrow__btn" id="${id}"><span data-no-i18n>${esc(value)}</span> · <span>Change</span></button></div>`;
 
+  // Shown for ~20 s after a reflection (the screen may render more than once on arrival).
+  let after = false; try { after = Date.now() - Number(sessionStorage.getItem("hmm.afterReflect") || 0) < 20000; } catch {}
   const html = `
   <header class="apphead"><a class="icon-btn" href="#/" aria-label="Back">${icons.back}</a><h1 class="apphead__title">My Thinking Profile</h1><span></span></header>
   <section class="feed">
+    ${after ? `<div class="agree">${engineBox(`<b>${esc(P.lastChange || "Your profile is updated from this session.")}</b> <span>Does this read you right? If not, change any setting below.</span>`)}
+      <a class="btn btn--ink auth__submit" href="#/" onclick="try{sessionStorage.removeItem('hmm.afterReflect')}catch(e){}">Looks right · Back to Home</a></div>` : ""}
     <div class="ident"><span class="avatar avatar--lg" aria-hidden="true">${esc((P.name || "?")[0])}</span>
       <div><b data-no-i18n>${esc(P.name || "You")}</b><span data-no-i18n>${esc(P.program || "")}</span><span>${P.sessions || 0} sessions</span></div></div>
 

@@ -45,7 +45,7 @@ export function render({ path }) {
         <label class="field">Your hardest subject right now<input id="hard" value="${esc(d.hard)}" placeholder="e.g. calculus, essays, accounting"></label>`,
     4: (() => { const p = derive(d); return `<h1 class="headline">Here’s how hmm. will start with you.</h1>
         <p class="snap-summary">${esc(p.hintPace)} · ${esc(d.challenge)} · ${esc(p.tone)} · ${d.langs.map(langShort).join(" + ")}</p>
-        <aside class="why"><span class="why__cham" data-chameleon="30"></span><p>${esc(p.why)}</p></aside>`; })(),
+        ${engineBox(esc(p.why))}`; })(),
   };
 
   const html = `

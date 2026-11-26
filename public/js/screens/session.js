@@ -5,6 +5,7 @@ import { store } from "../store.js";
 import { icons } from "../ui/icons.js";
 import * as db from "../db.js";
 import { engineBox } from "../ui/engine.js";
+import { t } from "../i18n/index.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -18,6 +19,8 @@ export function render({ path }) {
   }
   const c = CH[s.char];
 
+  const needsTopic = !s.task.topic;          // Flow 2/4: "Type the problem" / "State my claim" happens here
+  const ask4 = { socrates: ["Type the problem you’re stuck on.", "Type the problem…"], talmid: ["What will you teach Talmid? Name the concept.", "The concept you’ll explain…"], rival: ["State your claim in one sentence.", "Your claim…"] }[s.char];
   const back = s.task.course ? "#/course/" + encodeURIComponent(s.task.course) : "#/";
   const title = { socrates: "Socrates", talmid: "Talmid · your student", rival: "The Rival" }[s.char];
   const bar = {
@@ -41,6 +44,7 @@ export function render({ path }) {
 
     <section class="dialogue" id="dialogue" aria-live="polite">
       ${s.task.sample ? `<p class="sample-label" style="margin:0">Sample task</p>` : ""}
+      ${needsTopic ? `<div id="ask-topic">${engineBox(`<b>${ask4[0]}</b> ${s.char === "socrates" ? "hmm. reads your Learner Profile to size every step." : s.char === "rival" ? "The Rival argues the other side at your level." : "Talmid’s questions match your level."}`)}</div>` : ""}
       <div id="turns"></div>
       <div id="why"></div>
     </section>
@@ -50,7 +54,7 @@ export function render({ path }) {
     <form class="composer" id="composer">
       <button type="button" class="composer__mic" id="mic" aria-label="Speak instead of typing" title="Speak instead of typing">mic</button>
       <label class="sr-only" for="say">Type your thinking…</label>
-      <input id="say" autocomplete="off" placeholder="Type your thinking…" enterkeyhint="send">
+      <input id="say" autocomplete="off" placeholder="${needsTopic ? ask4[1] : "Type your thinking…"}" enterkeyhint="send">
       <button class="btn btn--ink composer__send-btn">Send</button>
     </form>
   </div>`;
@@ -178,6 +182,15 @@ export function render({ path }) {
         const v = $("#say").value.trim();
         if (!v || s.busy) return;
         $("#say").value = "";
+        if (!s.task.topic) {           // first message = the problem / concept / claim
+          s.task.topic = v; s.task.title = `your ${s.char === "rival" ? "claim" : "question"} · ${s.task.course}`;
+          store.saveSession(s);
+          $("#ask-topic")?.remove(); $("#say").placeholder = t("Type your thinking…");
+          const bar = el.querySelector(".sessbar__topic");
+          if (bar) bar.innerHTML = { socrates: `<span data-no-i18n>${esc(s.task.course)} · ${esc(v)}</span>`, talmid: `<span>You teach:</span> <b data-no-i18n>${esc(v)}</b> · <span data-no-i18n>${esc(s.task.course)}</span>`, rival: `<span>Your claim:</span> <b data-no-i18n>${esc(v)}</b>` }[s.char];
+          turn(`SESSION START. Greet the student in one short line as ${c.name}, then ask your first question.`, true);
+          return;
+        }
         turn(v);
       };
       $("#end").onclick = () => {
@@ -215,7 +228,7 @@ export function render({ path }) {
 
       s.busy = false;
       renderAdapt(); renderHints(); renderTurns(); showWhy(s.note); bindRetry();
-      if (!s.msgs.length) turn(`SESSION START. Greet the student in one short line as ${c.name}, then ask your first question.`, true);
+      if (!s.msgs.length && s.task.topic) turn(`SESSION START. Greet the student in one short line as ${c.name}, then ask your first question.`, true);
     },
   };
 }

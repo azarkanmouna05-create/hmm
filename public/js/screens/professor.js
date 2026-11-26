@@ -45,7 +45,12 @@ function bindMoves(el, list) {
   el.querySelectorAll("[data-move]").forEach((b) => b.onclick = async () => {
     const m = list[+b.dataset.move];
     try {
-      if (m.act === "plan") { await db.addPlan(m.course, m.t); b.outerHTML = `<span class="note__meta">Added to your lesson notes.</span>`; }
+      if (m.act === "plan") {
+        await db.addPlan(m.course, m.t);
+        sessionStorage.setItem("hmm.toast", `Added to your lecture plan for ${m.course}.`);
+        if (location.hash.startsWith("#/insights")) { location.hash = "#/"; return; }   // Flow 6: back to class pulse
+        b.outerHTML = `<span class="note__meta">Added to your lesson notes.</span>`;
+      }
       if (m.act === "invite") {
         const when = askText("When and where? (e.g. Thu 4pm, Building 8 room 104)"); if (!when) return;
         await db.createInvite({ course: m.course, topic: `Help session · ${m.course}`, when });
@@ -163,7 +168,7 @@ export function create({ path }) {
       <label class="field">Due date<input id="due" type="date"></label>
       <h2 class="label-caps">Adaptation</h2>
       <label class="setrow"><span>Let hmm. adapt to each student</span><input type="checkbox" id="adapt" checked class="toggle"></label>
-      <label class="setrow"><span>Max hints per student</span><input id="maxh" type="number" min="0" max="${pol.maxHints}" value="${pol.maxHints}" class="num"></label>
+      <label class="setrow"><span>Max hints per student</span><input id="maxh" type="number" min="0" value="${pol.maxHints}" class="num"></label>
       <p class="note__meta">University maximum: ${pol.maxHints}. Higher values are capped to the admin’s limit.</p>
       <details class="more"><summary>Suggested character and where students get stuck (optional)</summary>
         <div class="seg-pick" id="kind">${[["problem", "Problem", "socrates"], ["concept", "Concept", "talmid"], ["claim", "Claim", "rival"]].map(([k, l, ch]) =>
@@ -189,6 +194,9 @@ export function create({ path }) {
           instructions: (el.querySelector("#instr").value.trim() + adaptNote).trim(), steps: list("#steps"), misconceptions: list("#mis"),
           max_hints: capped, due: el.querySelector("#due").value || null };
       };
+      el.querySelector("#maxh").addEventListener("change", (e) => {
+        if (+e.target.value > pol.maxHints) { e.target.value = pol.maxHints; el.querySelector("#msg").textContent = t(`Capped to ${pol.maxHints}, the admin’s limit (set in Rules & settings).`); }
+      });
       el.querySelector("#preview").onclick = () => {
         const tk = build(); if (!tk.topic) return (el.querySelector("#msg").textContent = t("Write the question or topic first."));
         const ch = { problem: "socrates", concept: "talmid", claim: "rival" }[tk.kind];
@@ -199,9 +207,12 @@ export function create({ path }) {
         e.preventDefault();
         const tk = build();
         if (!tk.topic) return (el.querySelector("#msg").textContent = t("Write the question or topic first."));
-        if (+el.querySelector("#maxh").value > pol.maxHints) el.querySelector("#maxh").value = pol.maxHints;
-        if (!ask(`Publish “${tk.topic}” to ${tk.course}? Students see it on their Home.`)) return;
-        try { await db.createTask(tk); sessionStorage.setItem("hmm.toast", `Published to ${tk.course}. Students see it on their Home.`); location.hash = "#/"; }
+        if (+el.querySelector("#maxh").value > pol.maxHints) {
+          el.querySelector("#maxh").value = pol.maxHints;
+          el.querySelector("#msg").textContent = t(`Capped to ${pol.maxHints}, the admin’s limit (set in Rules & settings).`);
+        }
+        if (!ask(`Publish “${tk.topic}” to ${tk.course}? Students see it on their Home, and hmm. suggests a character to each.`)) return;
+        try { await db.createTask(tk); sessionStorage.setItem("hmm.toast", `Published to ${tk.course}. Students see it on their Home.`); location.hash = "#/"; }   // Flow 7 ends at S07
         catch (err) { el.querySelector("#msg").textContent = t(err.message); }
       };
     },

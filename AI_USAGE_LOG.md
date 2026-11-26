@@ -78,3 +78,7 @@ Entries are factual. The reasoning column is mine to review and rewrite in my ow
   - The reflection saved in ~3 s, and the profile rule fired ("You felt 5/5 with 0 hints, so hmm. now takes medium steps").
   - The professor saw sample-class insights with teaching moves.
   - The admin dashboard and rules loaded.
+
+| # | Date | Tool | Task / prompt (summary) | Output | Accepted / rejected / changed | Why |
+|---|------|------|-------------------------|--------|-------------------------------|-----|
+| 9 | 2026-11-26 | Claude Code | Align the app with my MP4 artifacts (story map, Flows 1–8, wireframes S01–S11, edge states, navigation map, content inventory, before/after changes) | Screens rebuilt; migrations 005–006; `tests/user-flows.e2e.js` | Accepted | Flow check found 4 mismatches (problem/claim typed before the session; Reflection skipped Profile; lecture plan didn't return to S07; hint cap silent). All fixed; the automated walk of Flows 1–8 now passes 31/31 steps. |
