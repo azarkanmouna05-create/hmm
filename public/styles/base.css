@@ -464,7 +464,10 @@ form.snap, #ins, #dash, #moves, .feed > form, .auth__form { display: flex; flex-
 .switch input:disabled + span { opacity: .85; }
 [dir="rtl"] .switch input:checked + span::after { transform: translateX(-20px); }
 .alert--btn { width: 100%; text-align: start; border: 0; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
-.bubble { display: block; width: 210px; max-width: 70vw; height: auto; margin: 4px auto 0; }
+.auth__mark { text-align: center; margin: 18px 0 6px; }
+.logo--xl { font-size: 64px; gap: 3px; color: var(--ink); }
+.logo--xl .logo__dot { width: 16px; height: 16px; margin-bottom: 8px; }
+.auth__tag { margin: 8px 0 0; font: italic 400 17px/1.3 var(--font-serif, Newsreader, serif); color: var(--muted); }
 .headline--sm { font-size: 24px; }
 .radio { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--ink); border-radius: 8px; background: var(--paper-raised); font: 500 15px/1.3 var(--font-ui); text-align: start; color: var(--ink); }
 .radio i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--muted); flex: none; }
