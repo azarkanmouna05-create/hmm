@@ -22,4 +22,6 @@ echo "### apply 004_staff_and_sample.sql (twice)"; q -v ON_ERROR_STOP=1 -f "$ROO
 echo "### test 40"; q -f "$HERE/40_staff_and_sample.sql"
 echo "### apply 005_demo_story.sql (twice)"; q -v ON_ERROR_STOP=1 -f "$ROOT/005_demo_story.sql"; q -v ON_ERROR_STOP=1 -f "$ROOT/005_demo_story.sql"
 echo "### test 50"; q -f "$HERE/50_demo_story.sql"
+echo "### apply 006_dashboard_data.sql (twice)"; q -v ON_ERROR_STOP=1 -f "$ROOT/006_dashboard_data.sql"; q -v ON_ERROR_STOP=1 -f "$ROOT/006_dashboard_data.sql"
+echo "### test 60"; q -f "$HERE/60_dashboard_data.sql"
 su postgres -c "$B/pg_ctl -D $W/data stop -m fast" >/dev/null 2>&1

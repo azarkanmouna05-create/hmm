@@ -100,6 +100,24 @@ export const ROWS = [
   ["Thanks, I’ll stop assuming that.", "Merci, j’arrête de supposer ça.", "شكرًا، سأتوقف عن افتراض ذلك.", "Choukran, ghadi n7bes nfred hadchi."],
   ["Saved. Your Thinking Profile is updated.", "Enregistré. Ton profil de pensée est à jour.", "تم الحفظ. تم تحديث ملفك الفكري.", "T-sejjel. Profil dyalek t-bddel."],
 
+  ["Hi,", "Salut,", "مرحبًا،", "Salam,"],
+  ["Adaptive engine", "Moteur adaptatif", "المحرّك التكيّفي", "L-moteur li kaytwedda"],
+  ["Today you are on:", "Aujourd’hui tu es en :", "اليوم أنت على:", "L-youm nta 3la:"],
+  ["Change", "Changer", "تغيير", "Bddel"],
+  ["Due soon", "À rendre bientôt", "قريب التسليم", "9rib l-ajal"],
+  ["suggested for you:", "suggéré pour toi :", "مقترح لك:", "m9tare7 lik:"],
+  ["sample", "exemple", "نموذج", "mithal"],
+  ["Start a session", "Commencer une séance", "ابدأ جلسة", "Bda séance"],
+  ["hmm. suggests a character from your Learning Snapshot. You can always switch.", "hmm. suggère un personnage d’après ton Learning Snapshot. Tu peux toujours changer.", "يقترح hmm. شخصية بناءً على لمحة التعلّم. يمكنك دائمًا التغيير.", "hmm. kay9tare7 chakhsiya 3la 7sab Learning Snapshot dyalek. Dima t9der tbddel."],
+  ["No tasks yet", "Pas encore de tâches", "لا مهام بعد", "Mazal ma kayn taches"],
+  ["Suggested:", "Suggéré :", "المقترح:", "M9tare7:"],
+  ["You can switch.", "Tu peux changer.", "يمكنك التغيير.", "T9der tbddel."],
+  ["· suggested", "· suggéré", "· مقترح", "· m9tare7"],
+  ["Close", "Fermer", "إغلاق", "Sedd"],
+  ["This is a problem to solve.", "C’est un problème à résoudre.", "هذه مسألة للحل.", "Hada mouchkil khasso yt7ell."],
+  ["This is a concept to explain.", "C’est un concept à expliquer.", "هذا مفهوم للشرح.", "Hada mafhoum khasso ytchre7."],
+  ["This is a claim to defend.", "C’est une affirmation à défendre.", "هذا ادعاء للدفاع عنه.", "Hadi fikra khassha tdafe3 3liha."],
+  ["Teaching it first builds the case before you defend it.", "L’enseigner d’abord construit ton argument avant de le défendre.", "تعليمها أولًا يبني حجتك قبل الدفاع عنها.", "Ila 3llemtiha lowel, katbni l-7ojja 9bel ma tdafe3."],
   // ── courses
   ["Got a code from your professor?", "Un code de ton professeur ?", "هل لديك رمز من أستاذك؟", "3ndek code mn 3nd l-ostad?"],
   ["e.g. CALC-7Q2K", "ex. CALC-7Q2K", "مثال: CALC-7Q2K", "b7al CALC-7Q2K"],
@@ -321,6 +339,8 @@ export const ROWS = [
 /* Sentences built from numbers and names. Each: [regex on the English text, {fr, ar, dar}] where values can use $1…$n.
    A value may also be a function (m, tr) => string, where tr() translates a captured piece recursively. */
 export const PATTERNS = [
+  [/^Your last (.+) session felt hard \((\d)\/5\), so a guided start first\.$/, { fr: "Ta dernière séance de $1 était dure ($2/5), donc d’abord un départ guidé.", ar: "كانت جلستك الأخيرة في $1 صعبة ($2/5)، لذا نبدأ بتوجيه.", dar: "S-séance l-akhira dyal $1 kant s3iba ($2/5), dakchi 3lach nbdaw b tawjih." }],
+  [/^(.+) is turned off for (.+) by your university\.$/, { fr: (m, tr) => `${tr(m[1])} est désactivé pour ${m[2]} par ton université.`, ar: (m, tr) => `${tr(m[1])} معطّل في ${m[2]} من طرف جامعتك.`, dar: (m, tr) => `${tr(m[1])} msdoud f ${m[2]} mn 3nd l-jami3a.` }],
   [/^Step (\d) of 4$/, { fr: "Étape $1 sur 4", ar: "الخطوة $1 من 4", dar: "Khatwa $1 mn 4" }],
   [/^(\d+) joined · join code$/, { fr: "$1 inscrit(s) · code d’accès", ar: "انضم $1 · رمز الانضمام", dar: "$1 dkhlo · code dyal d-dkhoul" }],
   [/^ ?· most stuck on “(.+)” · confidence ([\d.]+)\/5( · includes sample data)?$/, { fr: (m) => ` · bloquent surtout sur « ${m[1]} » · confiance ${m[2]}/5${m[3] ? " · inclut des données d’exemple" : ""}`, ar: (m) => ` · أكثر تعثر في «${m[1]}» · الثقة ${m[2]}/5${m[3] ? " · يتضمن بيانات نموذجية" : ""}`, dar: (m) => ` · kat7bes ktar f «${m[1]}» · th-thi9a ${m[2]}/5${m[3] ? " · fiha données mithal" : ""}` }],

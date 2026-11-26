@@ -35,7 +35,9 @@ async function pick(path) {
   const role = user ? await db.myRole() : "student";
   store.role = role;
   if (role !== "student") {
+    if (path.startsWith("/logout")) { await db.signOut(); location.replace("#/login"); return null; }
     if (path.startsWith("/account")) return as(prof.account);
+    if (path.startsWith("/preview")) return as(prof.preview);
     if (role === "admin") return as(path.startsWith("/rules") ? admin.rules : admin.dashboard);
     if (path.startsWith("/insights")) return as(prof.insights);
     if (path.startsWith("/create")) return as(prof.create);

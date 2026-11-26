@@ -2,38 +2,52 @@
    Copy reused from the earlier Figma Login frame; layout in the editorial style of E1/E2. */
 import * as db from "../db.js";
 import { langPicker, bindLangPicker, ask } from "../i18n/index.js";
+import { engineBox } from "../ui/engine.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 export function render({ path }) {
   const mode = path.endsWith("/forgot") ? "forgot" : path.endsWith("/signup") ? "signup" : "signin";
   const title = { signin: "Oh hey, curious mind.", signup: "Make your account.", forgot: "Forgot it? Happens." }[mode];
-  const button = { signin: "Sign in", signup: "Create account", forgot: "Send reset link" }[mode];
+  const button = { signin: "Log in", signup: "Create account", forgot: "Send reset link" }[mode];
+  // Pixel thought-bubble logo (MP4 S01).
+  const bubble = `<svg class="bubble" viewBox="0 0 160 100" role="img" aria-label="hmm.">
+    <path d="M44 14h8v-4h28v4h8v-4h20v4h8v4h6v6h4v8h4v14h-4v6h-4v4h-8v4h-14v4h-24v-4h-16v-4h-10v-4h-6v-6h-4v-16h4v-6h4v-4h8z" fill="#FFFDF9" stroke="var(--ink)" stroke-width="2" shape-rendering="crispEdges"/>
+    <rect x="30" y="70" width="10" height="8" fill="none" stroke="var(--ink)" stroke-width="2" shape-rendering="crispEdges"/>
+    <rect x="18" y="84" width="6" height="6" fill="none" stroke="var(--ink)" stroke-width="2" shape-rendering="crispEdges"/>
+    <rect x="10" y="94" width="4" height="4" fill="var(--ink)"/>
+    <text x="92" y="50" text-anchor="middle" font-family="Pixelify Sans, monospace" font-weight="700" font-size="30" fill="var(--ink)">hmm</text>
+    <circle class="bubble__dot logo__dot" cx="126" cy="46" r="4" fill="var(--socrates)"/></svg>`;
 
   const html = `
-  <header class="topbar"><span class="logo">hmm<span class="logo__dot"></span></span><span class="topbar__spacer"></span>${langPicker()}</header>
+  <header class="apphead"><span></span><h1 class="apphead__title" style="font-family:var(--font-ui)">hmm.</h1><span class="apphead__end">${langPicker()}</span></header>
   <section class="auth">
-    <h1 class="headline">${title}</h1>
-    <div class="auth__quote">
-      <p>${mode === "forgot" ? "Type your university email and I’ll send you a link." : "“I ask. You figure it out. Deal?”"}</p>
-      <span data-chameleon="56"></span>
-    </div>
+    ${mode === "signin" ? bubble : `<h2 class="headline">${title}</h2>`}
+    ${mode === "forgot" ? `<p class="dek">Enter your university email and we will send a reset link.</p>` : ""}
     ${db.isConfigured() ? "" : `<p class="auth__warn" role="status">The database isn’t connected yet (setup step). You can look around in demo mode; nothing is saved online.</p>`}
     <form class="auth__form" id="f" novalidate>
       <label>University email
-        <input id="email" type="email" autocomplete="username" inputmode="email" placeholder="you@aui.ma" required>
+        <input id="email" type="email" autocomplete="username" inputmode="email" placeholder="name@aui.ma" required>
       </label>
       ${mode !== "forgot" ? `
       <label>Password
         <span class="auth__pw">
-          <input id="pw" type="password" autocomplete="${mode === "signup" ? "new-password" : "current-password"}" placeholder="${mode === "signup" ? "At least 6 characters" : "Your password"}" required minlength="6">
+          <input id="pw" type="password" autocomplete="${mode === "signup" ? "new-password" : "current-password"}" placeholder="${mode === "signup" ? "At least 6 characters" : "Password"}" required minlength="6">
           <button type="button" class="auth__show" id="show" aria-label="Show password">Show</button>
         </span>
       </label>` : ""}
       <p class="auth__msg" id="msg" role="alert" aria-live="assertive"></p>
       <button class="btn btn--ink auth__submit" id="go">${button}</button>
+      ${mode === "signin" ? `<button type="button" class="btn btn--ghost auth__submit" id="sso">Sign in with University SSO</button>` : ""}
       ${!db.isConfigured() ? `<button type="button" class="btn btn--ghost auth__submit" id="demo">Continue in demo mode</button>` : ""}
     </form>
+    <p class="auth__links" style="text-align:center">
+      ${mode === "signin" ? `<a href="#/login/forgot">Forgot password?</a> · <a href="#/login/signup">New here? Create your account</a>`
+        : `<a href="#/login">Back to log in</a>`}
+    </p>
+    ${mode === "forgot" ? engineBox("Students on university SSO reset through the university portal instead.", { cham: false }) : ""}
+    <hr class="rule">
+    <p class="auth__fine">No role to pick: hmm. opens the student, professor or admin view based on your university account.</p>
     <div class="auth__demo" id="demo-box" hidden>
       <p class="kicker" style="color:var(--muted)">Class demo · one tap, no password</p>
       <div class="auth__demo-row">
@@ -44,11 +58,6 @@ export function render({ path }) {
       </div>
       <button type="button" class="link-btn" id="restart">↺ Start the demo over (fresh Mouna, default rules, new sample data)</button>
     </div>
-    <p class="auth__links">
-      ${mode === "signin" ? `<a href="#/login/forgot">Forgot password?</a> · <a href="#/login/signup">New here? Create your account</a>`
-        : `<a href="#/login">Back to sign in</a>`}
-    </p>
-    <p class="auth__fine">Your role (student, professor, admin) comes from your university account. Professors only ever see class-level patterns, never your chats.</p>
   </section>`;
 
   return {
@@ -80,6 +89,7 @@ export function render({ path }) {
         } catch (err) { msg(err.message); }
         $("#restart").disabled = false;
       });
+      $("#sso")?.addEventListener("click", () => msg("University SSO is planned for a later release (it needs AUI’s identity provider). Use your university email for now."));
       $("#demo")?.addEventListener("click", () => { sessionStorage.setItem("hmm.demo", "1"); location.hash = "#/"; });
       $("#f").addEventListener("submit", async (e) => {
         e.preventDefault();

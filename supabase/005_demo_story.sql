@@ -93,7 +93,9 @@ begin
 end $$;
 grant execute on function public.reset_demo() to authenticated;
 
--- If Ines already exists (she shouldn't yet), seed her now.
+-- If Ines already exists (e.g. the button was tapped before this script ran), make her the demo account and seed her.
+update public.user_roles set role = 'student', demo = true
+where user_id in (select id from auth.users where lower(email) = 'ines.demo@aui.ma');
 select public.seed_returning_student(u.id) from auth.users u where lower(u.email) = 'ines.demo@aui.ma';
 
 -- One help-session invite exists from the start of the demo.

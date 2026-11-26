@@ -4,6 +4,7 @@ import { CH, PACES, LEVELS, TONES, langShort } from "../engine/engine.js";
 import { store } from "../store.js";
 import { icons } from "../ui/icons.js";
 import * as db from "../db.js";
+import { engineBox } from "../ui/engine.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -17,29 +18,40 @@ export function render({ path }) {
   }
   const c = CH[s.char];
 
+  const back = s.task.course ? "#/course/" + encodeURIComponent(s.task.course) : "#/";
+  const title = { socrates: "Socrates", talmid: "Talmid · your student", rival: "The Rival" }[s.char];
+  const bar = {
+    socrates: `<span data-no-i18n>${esc(s.task.course || "")}</span>${s.task.course ? " · " : ""}<span data-no-i18n>${esc(s.task.topic)}</span>`,
+    talmid: `<span>You teach:</span> <b data-no-i18n>${esc(s.task.topic)}</b>${s.task.course ? ` · <span data-no-i18n>${esc(s.task.course)}</span>` : ""}`,
+    rival: `<span>Your claim:</span> <b data-no-i18n>${esc(s.task.topic)}</b>`,
+  }[s.char];
+
   const html = `
   <div class="session" style="--char:${c.color}">
-    <header class="session__head">
-      <a class="icon-btn" href="${s.task.course ? "#/course/" + encodeURIComponent(s.task.course) : "#/"}" aria-label="Back">${icons.back}</a>
-      <span class="initial initial--sm initial--${s.char}" style="width:32px;height:32px;font-size:16px" aria-hidden="true">${c.initial}</span>
-      <span class="session__title"><b>${c.name}</b><span>A dialogue on ${esc(s.task.title || s.task.topic)}</span></span>
-      <button class="btn btn--sm btn--ghost" id="end">End</button>
+    <header class="apphead">
+      <a class="icon-btn" href="${back}" aria-label="Back">${icons.back}</a>
+      <h1 class="apphead__title">${title}</h1>
+      <button class="btn btn--sm btn--ghost apphead__end" id="end">End</button>
     </header>
-    <p class="adapted"><span>Adapted for you:</span> <span id="adapt"></span></p>
+    <div class="sessbar">
+      <p class="sessbar__topic">${bar}</p>
+      ${s.char === "socrates" ? `<p class="sessbar__label">Adapted for you right now (tap to change):</p><div class="chips" id="adapt"></div>` : ""}
+      ${s.char === "rival" ? `<div class="rival-board" id="board"></div>` : ""}
+    </div>
 
     <section class="dialogue" id="dialogue" aria-live="polite">
-      <h1 class="dialogue__problem">${esc(s.task.topic)}</h1>
-      ${s.task.sample ? `<p class="sample-label" style="margin:-6px 0 0">Sample task</p>` : ""}
+      ${s.task.sample ? `<p class="sample-label" style="margin:0">Sample task</p>` : ""}
       <div id="turns"></div>
       <div id="why"></div>
     </section>
 
-    <div class="hints" id="hints" data-perch></div>
+    <div class="ladder" id="hints" data-perch></div>
 
     <form class="composer" id="composer">
-      <label class="sr-only" for="say">Reply to ${c.name}</label>
-      <input id="say" autocomplete="off" placeholder="${{ socrates: "Reply to Socrates…", talmid: "Explain it to Talmid…", rival: "Make your case…" }[s.char]}" enterkeyhint="send">
-      <button class="composer__send" aria-label="Send">${icons.send}</button>
+      <button type="button" class="composer__mic" id="mic" aria-label="Speak instead of typing" title="Speak instead of typing">mic</button>
+      <label class="sr-only" for="say">Type your thinking…</label>
+      <input id="say" autocomplete="off" placeholder="Type your thinking…" enterkeyhint="send">
+      <button class="btn btn--ink composer__send-btn">Send</button>
     </form>
   </div>`;
 
@@ -49,38 +61,36 @@ export function render({ path }) {
       const $ = (q) => el.querySelector(q);
 
       function renderAdapt() {
+        if (!$("#adapt")) return;
         const P = store.profile;
-        const items = [["pace", s.pace], ["tone", s.tone], ["level", s.level]];
-        $("#adapt").innerHTML = items.map(([k, v]) => `<button class="adapted__chip" data-a="${k}" title="Tap to change">${esc(v.toLowerCase())}</button>`).join(" · ")
-          + ` · <span style="white-space:nowrap">${P.langs.map(langShort).join(" + ")}</span>`;
+        $("#adapt").innerHTML = [["pace", s.pace], ["tone", s.tone], ["level", s.level]]
+          .map(([k, v]) => `<button type="button" class="chip-btn" data-a="${k}" title="Tap to change">${esc(v)}</button>`).join("")
+          + `<a class="chip-btn" href="#/me" title="Change languages in your profile">${esc(P.langs.map(langShort).join(" + "))}</a>`;
         el.querySelectorAll("[data-a]").forEach((b) => b.onclick = () => {
           const k = b.dataset.a, arr = { pace: PACES, level: LEVELS, tone: TONES }[k];
           s[k] = arr[(arr.indexOf(s[k]) + 1) % arr.length];
           s.changes.push(`${k} → ${s[k]}`);
           store.saveSession(s); renderAdapt();
-          showWhy(`Switching to "${s[k].toLowerCase()}" from my next reply.`);
+          showWhy(`You changed it to "${s[k].toLowerCase()}". hmm. adapts from the next reply.`);
         });
       }
 
+      // Bottom panel (wireframe): hint ladder (Socrates), understanding meter (Talmid), argument strength (Rival).
+      const seg = (n, of, cls) => `<span class="ladder__seg ${cls}" aria-hidden="true">${Array.from({ length: of }, (_, i) => `<i class="${i < n ? "on" : ""}"></i>`).join("")}</span>`;
       function renderHints() {
-        const dots = (n, cls) => `<span class="meter ${cls}" aria-hidden="true">${[1, 2, 3, 4, 5].map((i) => `<i class="${i <= n ? "on" : ""}"></i>`).join("")}</span>`;
-        if (s.char === "talmid") {   // US3: how well the confused classmate now understands
-          $("#hints").innerHTML = `<span class="hints__label">Talmid understands <b>${s.meter}/5</b></span>${dots(s.meter, "meter--talmid")}`;
-          return;
+        if (s.char === "rival" && $("#board")) {
+          $("#board").innerHTML = `
+            <div><span class="label-caps">Your points</span><ul>${s.points.slice(-3).map((p) => `<li data-no-i18n>${esc(p)}</li>`).join("") || "<li>…</li>"}</ul></div>
+            <div><span class="label-caps">Rival counters</span><ul>${s.counters.slice(-3).map((p) => `<li data-no-i18n>${esc(p)}</li>`).join("") || "<li>…</li>"}</ul></div>`;
         }
-        if (s.char === "rival") {    // US4: your points vs the Rival's counters + argument strength
-          $("#hints").innerHTML = `<div class="rival-board">
-            <div><span class="hints__label">Your points ${s.points.length}</span><ul>${s.points.slice(-3).map((p) => `<li>${esc(p)}</li>`).join("") || "<li>…</li>"}</ul></div>
-            <div><span class="hints__label">Rival counters ${s.counters.length}</span><ul>${s.counters.slice(-3).map((p) => `<li>${esc(p)}</li>`).join("") || "<li>…</li>"}</ul></div>
-            <div class="rival-board__strength"><span class="hints__label">Argument strength <b>${s.meter}/5</b></span>${dots(s.meter, "meter--rival")}</div></div>`;
-          return;
-        }
+        if (s.char === "talmid") { $("#hints").innerHTML = `<p class="ladder__title"><span>Talmid understands:</span> ${s.meter} <span>of</span> 5</p>${seg(s.meter, 5, "seg--talmid")}`; return; }
+        if (s.char === "rival") { $("#hints").innerHTML = `<p class="ladder__title"><span>Argument strength:</span> ${s.meter} <span>of</span> 5</p>${seg(s.meter, 5, "seg--rival")}`; return; }
         const left = s.maxHints - s.hints;
         $("#hints").innerHTML = `
-          <span class="hints__label">Hints ${s.hints} of ${s.maxHints}</span>
-          <span class="hints__dots" aria-hidden="true">${Array.from({ length: s.maxHints }, (_, i) => `<i class="${i < s.hints ? "on" : ""}"></i>`).join("")}</span>
-          <span class="hints__gap"></span>
-          <button class="hints__ask" id="hint" ${left <= 0 || s.busy ? "disabled" : ""}>${left > 0 ? "Ask for a hint" : "No hints left, keep going"}</button>`;
+          <p class="ladder__title"><span>Hint ladder</span> · ${s.hints} <span>of</span> ${s.maxHints} <span>used</span></p>
+          ${seg(s.hints, s.maxHints, "seg--hint")}
+          <p class="ladder__note">Each hint is a bigger clue. You can keep trying after hint ${s.maxHints}; the final answer is never shown.</p>
+          <button type="button" class="btn btn--ghost ladder__btn" id="hint" ${left <= 0 || s.busy ? "disabled" : ""}>${left > 0 ? "Give me a hint" : "No hints left, keep going"}</button>`;
         $("#hint").onclick = () => {
           if (s.busy || s.hints >= s.maxHints) return;
           s.hints++; renderHints();
@@ -89,7 +99,10 @@ export function render({ path }) {
       }
 
       function turnHTML(m) {
-        if (m.err) return `<div class="turn turn--sys" role="alert"><p><b>hmm. can't think right now.</b> Your session is saved. Nothing is lost.</p><button class="btn btn--sm btn--ghost" id="retry">Try again</button></div>`;
+        if (m.err) return `<div class="turn turn--sys" role="alert"><p><b>hmm. can't think right now.</b> Your session is saved. Nothing is lost.</p>
+          <button class="btn btn--ink auth__submit" id="retry">Try again</button>
+          ${s.char === "socrates" ? `<button class="btn btn--ghost auth__submit" id="review">Review your hints so far</button>` : ""}
+          ${engineBox("Fallback: the session reopens exactly where it stopped.", { cham: false })}</div>`;
         if (m.hidden) return "";
         const me = m.role === "user";
         return `<div class="turn ${me ? "turn--me" : "turn--ai"}"><span class="turn__who">${me ? "You" : esc(c.name)}</span><p>${m.pending ? `<span class="thinking">thinking</span>` : esc(m.label || m.content)}</p></div>`;
@@ -99,7 +112,7 @@ export function render({ path }) {
         const d = $("#dialogue"); d.scrollTop = d.scrollHeight;
       }
       function showWhy(text) {
-        $("#why").innerHTML = text ? `<aside class="why"><span class="why__cham" data-chameleon="30"></span><p>${esc(text)}</p></aside>` : "";
+        $("#why").innerHTML = text ? engineBox(esc(text)) : "";
         import("../chameleon/chameleon.js").then((m) => m.mountInlineChameleons($("#why")));
       }
 
@@ -174,6 +187,10 @@ export function render({ path }) {
       };
 
       function bindRetry() {
+        $("#review")?.addEventListener("click", () => {
+          const hints = s.msgs.map((m, i) => (m.label?.startsWith("asked for hint") ? s.msgs[i + 1]?.content : null)).filter(Boolean);
+          $("#why").innerHTML = engineBox(hints.length ? hints.map((h, i) => `<b>Hint ${i + 1}:</b> ${esc(h)}`).join("<br>") : "No hints used yet in this session.");
+        });
         const b = $("#retry"); if (!b) return;
         b.onclick = () => {
           const { retry } = s.msgs.pop();   // the error notice
@@ -181,6 +198,20 @@ export function render({ path }) {
           turn(retry.text, retry.hidden, retry.label);
         };
       }
+
+      // Mic (wireframe): speak instead of typing, in the student's first language, where the browser supports it.
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const mic = $("#mic");
+      if (!SR) { mic.disabled = true; mic.title = "Voice input isn’t supported in this browser"; }
+      else mic.onclick = () => {
+        const rec = new SR();
+        rec.lang = { English: "en-US", "Français": "fr-FR", Darija: "ar-MA", "العربية": "ar-MA" }[store.profile.langs?.[0]] || "en-US";
+        rec.interimResults = false;
+        mic.classList.add("is-on"); mic.textContent = "…";
+        rec.onresult = (e) => { $("#say").value = ($("#say").value + " " + e.results[0][0].transcript).trim(); $("#say").focus(); };
+        rec.onend = rec.onerror = () => { mic.classList.remove("is-on"); mic.textContent = "mic"; };
+        rec.start();
+      };
 
       s.busy = false;
       renderAdapt(); renderHints(); renderTurns(); showWhy(s.note); bindRetry();

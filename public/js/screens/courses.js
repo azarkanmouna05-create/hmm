@@ -6,6 +6,7 @@ import { store } from "../store.js";
 import { locale } from "../i18n/index.js";
 import * as db from "../db.js";
 import { icons } from "../ui/icons.js";
+import { pickCharacter } from "../ui/start.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtDue = (d) => { const t = new Date(d + "T12:00"); return isNaN(t) ? d : t.toLocaleDateString(locale(), { weekday: "short", day: "numeric", month: "short" }); };
@@ -27,10 +28,9 @@ const header = (active) => `
 
 export const tabbar = (active) => `
   <nav class="tabbar" aria-label="Main">
-    <a href="#/" ${active === "home" ? 'aria-current="page"' : ""}>${icons.home}Home</a>
+    <a href="#/" ${active === "home" || active === "courses" ? 'aria-current="page"' : ""}>${icons.home}Home</a>
     <a href="#/reflect" ${active === "reflect" ? 'aria-current="page"' : ""}>${icons.reflect}Reflect</a>
-    <a href="#/courses" ${active === "courses" ? 'aria-current="page"' : ""}>${icons.courses}Courses</a>
-    <a href="#/me" ${active === "me" ? 'aria-current="page"' : ""}>${icons.me}Me</a>
+    <a href="#/me" ${active === "me" ? 'aria-current="page"' : ""}>${icons.me}Profile</a>
   </nav>`;
 
 export function render({ path }) {
@@ -128,11 +128,7 @@ function coursePage(code) {
         store.startFree(k, code, topic);
         location.hash = "#/session/" + k;
       });
-      el.querySelectorAll("[data-task]").forEach((b) => b.onclick = () => {
-        const t = store.tasks.find((x) => String(x.id) === b.dataset.task);
-        store.startSession(b.dataset.char, t);
-        location.hash = "#/session/" + b.dataset.char;
-      });
+      el.querySelectorAll("[data-task]").forEach((b) => b.onclick = () => pickCharacter(store.tasks.find((x) => String(x.id) === b.dataset.task)));
     },
   };
 }

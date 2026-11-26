@@ -64,7 +64,7 @@ export async function signOut() { await client?.auth.signOut(); cache.clear(); }
 
 function friendly(e) {
   const m = String(e.message || e);
-  if (/invalid login credentials/i.test(m)) return new Error("That email and password don't match. Try again, or reset your password.");
+  if (/invalid login credentials/i.test(m)) return new Error("Email or password is incorrect.");
   if (/already registered/i.test(m)) return new Error("You already have an account. Sign in instead.");
   if (/password/i.test(m) && /6/.test(m)) return new Error("Use at least 6 characters for your password.");
   if (/university email|database error saving new user/i.test(m)) return new Error("Please use your university email (for example name@aui.ma).");

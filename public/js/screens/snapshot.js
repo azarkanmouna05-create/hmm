@@ -4,13 +4,14 @@ import { derive, LEVELS, TONES, langShort, clampLevel } from "../engine/engine.j
 import { store } from "../store.js";
 import { setChameleonMood } from "../chameleon/chameleon.js";
 import { icons } from "../ui/icons.js";
+import { engineBox } from "../ui/engine.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const STUCK = [
-  ["freeze", "I don’t know where to start", "The blank-page stare. A classic."],
-  ["answer", "I want the answer and move on", "Deadlines are real. Honest answer."],
-  ["hint", "I ask for a small hint", "Just a nudge, please."],
-  ["push", "I push through on my own", "Challenge me a little."],
+  ["push", "Push through on my own"],
+  ["hint", "Ask for a small hint"],
+  ["answer", "Want the answer and move on"],
+  ["freeze", "Freeze, not sure where to start"],
 ];
 let draft = null;
 
@@ -21,21 +22,24 @@ export function render({ path }) {
     langs: P.snap ? [...(P.langs || ["English"])] : ["English"], challenge: P.snap ? P.challenge : "Balanced", tone: P.snap ? P.tone : "", hard: P.snap?.hard || "" };
   const d = draft;
   const levels = LEVELS.filter((l) => clampLevel(l, pol) === l);
-  const chip = (group, v, label, on, sub = "") => `<button type="button" class="pick ${on ? "is-on" : ""}" data-g="${group}" data-v="${esc(v)}" aria-pressed="${on}">
-      <span>${esc(label)}</span>${sub ? `<small>${esc(sub)}</small>` : ""}</button>`;
+  const chip = (group, v, label, on, sub = "") => group === "stuck" || group === "tone"
+    ? `<button type="button" class="radio ${on ? "is-on" : ""}" data-g="${group}" data-v="${esc(v)}" role="radio" aria-checked="${on}"><i aria-hidden="true"></i><span>${esc(label)}</span></button>`
+    : `<button type="button" class="seg-pick__btn ${on ? "is-on" : ""}" data-g="${group}" data-v="${esc(v)}" aria-pressed="${on}">${on ? "✓ " : ""}${esc(label)}</button>`;
 
   const bodies = {
     1: `<h1 class="headline">Let hmm. get to know how you think.</h1>
         <p class="dek">Four quick questions so hmm. fits how you learn. You can change any answer later in your profile.</p>
         <label class="field">What should hmm. call you?<input id="name" value="${esc(d.name)}" autocomplete="given-name"></label>
         <label class="field">Program and year<input id="program" value="${esc(d.program)}" placeholder="e.g. BAI · 3rd year"></label>`,
-    2: `<h1 class="headline">Where does it get fuzzy?</h1>
-        <p class="field-label">When you’re stuck, you usually…</p>
+    2: `<h1 class="headline headline--sm">Let hmm. get to know how you think</h1>
+        <p class="note__meta" style="margin:-6px 0 0">4 quick questions so hmm. fits how you learn. You can change any answer later in your profile.</p>
+        <p class="label-caps">When you are stuck, you usually…</p>
         <div class="picks">${STUCK.map(([v, l, sub]) => chip("stuck", v, l, d.stuck === v, sub)).join("")}</div>
-        <p class="field-label">Languages (pick any)</p>
+        <p class="label-caps">Language</p>
         <div class="picks picks--row">${pol.langs.map((l) => chip("langs", l, l, d.langs.includes(l))).join("")}</div>
-        <p class="field-label">How hard should hmm. push you?</p>
-        <div class="picks picks--row">${levels.map((l) => chip("challenge", l, l, d.challenge === l)).join("")}</div>`,
+        <p class="label-caps">How hard should hmm. push you?</p>
+        <div class="picks picks--row">${levels.map((l) => chip("challenge", l, l, d.challenge === l)).join("")}</div>
+        ${engineBox("These answers create your starting Learner Profile. hmm. keeps adjusting it after every session.")}`,
     3: `<h1 class="headline">How should hmm. talk to you?</h1>
         <div class="picks">${TONES.map((t) => chip("tone", t, t, d.tone === t)).join("")}</div>
         <label class="field">Your hardest subject right now<input id="hard" value="${esc(d.hard)}" placeholder="e.g. calculus, essays, accounting"></label>`,
@@ -45,13 +49,12 @@ export function render({ path }) {
   };
 
   const html = `
-  <header class="topbar">
-    ${step > 1 ? `<a class="snap-back" href="#/snapshot/${step - 1}" aria-label="Back">${icons.back}</a>` : ""}
-    <span class="snap-progress" aria-label="Step ${step} of 4">${[1, 2, 3, 4].map((i) => `<i class="${i <= step ? "on" : ""}"></i>`).join("")}</span>
-    <span class="sample-label">${step}/4</span>
+  <header class="apphead">
+    ${step > 1 ? `<a class="snap-back" href="#/snapshot/${step - 1}" aria-label="Back">${icons.back}</a>` : "<span></span>"}
+    <h1 class="apphead__title">Learning Snapshot</h1>
+    <span class="apphead__end note__meta">${step} of 4</span>
   </header>
   <section class="feed snap">
-    <p class="kicker">Learning Snapshot</p>
     ${bodies[step]}
     <div class="snap__actions">
       <button class="btn btn--ink auth__submit" id="next">${step === 4 ? "Start using hmm." : "Continue"}</button>
