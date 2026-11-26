@@ -1,7 +1,7 @@
 /* Service worker: makes hmm. installable and usable offline.
    NETWORK-FIRST: when online, always load the newest files (so an update can never leave a mix of old and
    new code); the cache is only a fallback when offline. /api/* is never cached. */
-const VERSION = "hmm-v8";
+const VERSION = "hmm-v9";
 const SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon-192.png"];
 
 self.addEventListener("install", (e) => {
