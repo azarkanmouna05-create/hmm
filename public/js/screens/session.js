@@ -188,7 +188,8 @@ export function render({ path }) {
           $("#ask-topic")?.remove(); $("#say").placeholder = t("Type your thinking…");
           const bar = el.querySelector(".sessbar__topic");
           if (bar) bar.innerHTML = { socrates: `<span data-no-i18n>${esc(s.task.course)} · ${esc(v)}</span>`, talmid: `<span>You teach:</span> <b data-no-i18n>${esc(v)}</b> · <span data-no-i18n>${esc(s.task.course)}</span>`, rival: `<span>Your claim:</span> <b data-no-i18n>${esc(v)}</b>` }[s.char];
-          turn(`SESSION START. Greet the student in one short line as ${c.name}, then ask your first question.`, true);
+          // The student's own words appear as their first line (wireframe: "You: Just give me the derivative of…").
+          turn(`SESSION START. The student's ${s.char === "rival" ? "claim" : s.char === "talmid" ? "topic to teach you" : "problem"} is: "${v}". Greet the student in one short line as ${c.name}, then ask your first question.`, false, v);
           return;
         }
         turn(v);
